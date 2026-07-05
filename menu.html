@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Parda Biznes — Bosh menyu</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#eef2f9; --card:#fff; --text:#151b2b; --muted:#7a869a;
+    --line:#e6eaf2; --brand:#2f6fed; --brand-soft:#eaf1ff;
+    --shadow:0 8px 24px rgba(20,40,90,.07); --radius:18px;
+  }
+  body.tg{
+    --bg:var(--tg-theme-secondary-bg-color,#eef2f9);
+    --card:var(--tg-theme-bg-color,#fff);
+    --text:var(--tg-theme-text-color,#151b2b);
+    --muted:var(--tg-theme-hint-color,#7a869a);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg);color:var(--text);padding:0 0 40px;}
+  .wrap{max-width:560px;margin:0 auto;padding:0 14px;}
+
+  /* Header */
+  .hero{
+    background:linear-gradient(135deg,#1e3a6b,#2f6fed);
+    color:#fff;padding:26px 20px 30px;border-radius:0 0 26px 26px;margin-bottom:-16px;
+  }
+  .hero .brand{display:flex;align-items:center;gap:12px;}
+  .hero .logo{width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.18);
+    display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .hero h1{margin:0;font-size:20px;font-weight:800;}
+  .hero p{margin:2px 0 0;font-size:13px;opacity:.85;}
+  .hero .stat{display:flex;gap:10px;margin-top:18px;}
+  .hero .stat .box{flex:1;background:rgba(255,255,255,.13);border-radius:14px;padding:10px 12px;}
+  .hero .stat .n{font-size:19px;font-weight:800;}
+  .hero .stat .l{font-size:11px;opacity:.8;}
+
+  .section-title{font-size:13px;color:var(--muted);font-weight:700;margin:26px 4px 12px;
+    text-transform:uppercase;letter-spacing:.5px;}
+
+  /* Menu grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .tile{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 16px;cursor:pointer;text-align:left;
+    transition:transform .12s, box-shadow .12s;position:relative;overflow:hidden;
+  }
+  .tile:active{transform:scale(.97);}
+  .tile .ic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;
+    justify-content:center;font-size:22px;margin-bottom:12px;}
+  .tile h3{margin:0;font-size:15px;font-weight:700;}
+  .tile p{margin:3px 0 0;font-size:12px;color:var(--muted);}
+  .tile .arrow{position:absolute;top:16px;right:14px;color:var(--muted);font-size:15px;}
+
+  .c-blue{background:#eaf1ff;color:#2f6fed;}
+  .c-green{background:#e6f7ef;color:#1fa971;}
+  .c-orange{background:#fff1e6;color:#f0842a;}
+  .c-purple{background:#f0eafe;color:#7b52e0;}
+  .c-pink{background:#fdeaf1;color:#e2517b;}
+  .c-gray{background:#eef1f6;color:#5a6577;}
+
+  /* Detail view */
+  .screen{display:none;padding-top:14px;}
+  .screen.active{display:block;}
+  .home.hidden{display:none;}
+  .back{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);
+    color:var(--text);border-radius:12px;padding:9px 14px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:16px;}
+  .placeholder{background:var(--card);border:1.5px dashed var(--brand);border-radius:var(--radius);
+    padding:30px 20px;text-align:center;}
+  .placeholder .big{font-size:40px;margin-bottom:10px;}
+  .placeholder h2{margin:0 0 8px;font-size:18px;}
+  .placeholder p{margin:0;color:var(--muted);font-size:14px;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- ================= BOSH MENYU ================= -->
+<div class="home" id="home">
+  <div class="hero">
+    <div class="brand">
+      <div class="logo">🪟</div>
+      <div>
+        <h1>Parda Biznes</h1>
+        <p>Hisob-kitob va boshqaruv paneli</p>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="box"><div class="n">—</div><div class="l">Bugungi buyurtma</div></div>
+      <div class="box"><div class="n">—</div><div class="l">Mijozlar</div></div>
+      <div class="box"><div class="n">—</div><div class="l">Kirim</div></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="section-title">Bo'limlar</div>
+    <div class="grid">
+
+      <button class="tile" data-open="hisob">
+        <div class="ic c-blue">🪟</div>
+        <h3>Hisob-kitob</h3>
+        <p>Parda mato hisobi</p>
+        <span class="arrow">›</span>
+      </button>
+
+      <button class="tile" data-open="mijozlar">
+        <div class="ic c-green">👥</div>
+        <h3>Mijozlar</h3>
+        <p>Mijozlar bazasi</p>
+        <span class="arrow">›</span>
+      </button>
+
+      <button class="tile" data-open="buyurtma">
+        <div class="ic c-orange">📋</div>
+        <h3>Buyurtmalar</h3>
+        <p>Buyurtma tarixi</p>
+        <span class="arrow">›</span>
+      </button>
+
+      <button class="tile" data-open="narx">
+        <div class="ic c-purple">💰</div>
+        <h3>Narx-navo</h3>
+        <p>Mato narxlari</p>
+        <span class="arrow">›</span>
+      </button>
+
+      <button class="tile" data-open="hisobot">
+        <div class="ic c-pink">📊</div>
+        <h3>Hisobotlar</h3>
+        <p>Kunlik / oylik</p>
+        <span class="arrow">›</span>
+      </button>
+
+      <button class="tile" data-open="sozlama">
+        <div class="ic c-gray">⚙️</div>
+        <h3>Sozlamalar</h3>
+        <p>Bot sozlamalari</p>
+        <span class="arrow">›</span>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= DETAL EKRAN (placeholder) ================= -->
+<div class="screen" id="screen">
+  <div class="wrap">
+    <button class="back" id="backBtn">‹ Orqaga</button>
+    <div class="placeholder">
+      <div class="big" id="ph-icon">🪟</div>
+      <h2 id="ph-title">Bo'lim</h2>
+      <p>Bu tugma <b>hozircha bo'sh</b>.<br>
+      Menga ayting: <b>bu bo'lim bosilganda nima qilishi kerak?</b><br>
+      Men shu yerga kerakli interfeys va kodni yozaman.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if (tg){ tg.expand(); document.body.classList.add('tg'); }
+
+const META = {
+  hisob:    {icon:'🪟', title:'Hisob-kitob'},
+  mijozlar: {icon:'👥', title:'Mijozlar'},
+  buyurtma: {icon:'📋', title:'Buyurtmalar'},
+  narx:     {icon:'💰', title:'Narx-navo'},
+  hisobot:  {icon:'📊', title:'Hisobotlar'},
+  sozlama:  {icon:'⚙️', title:'Sozlamalar'},
+};
+
+const home = document.getElementById('home');
+const screen = document.getElementById('screen');
+
+document.querySelectorAll('.tile').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    const key = t.getAttribute('data-open');
+
+    // "Hisob-kitob" bo'limi allaqachon tayyor kalkulyatorni ochadi
+    if (key === 'hisob'){
+      location.href = 'index.html';
+      return;
+    }
+
+    const m = META[key];
+    document.getElementById('ph-icon').textContent = m.icon;
+    document.getElementById('ph-title').textContent = m.title;
+    home.classList.add('hidden');
+    screen.classList.add('active');
+    window.scrollTo(0,0);
+    if (tg){ tg.BackButton.show(); }
+  });
+});
+
+function goHome(){
+  screen.classList.remove('active');
+  home.classList.remove('hidden');
+  if (tg){ tg.BackButton.hide(); }
+}
+document.getElementById('backBtn').addEventListener('click', goHome);
+if (tg){ tg.BackButton.onClick(goHome); }
+</script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Parda Hisob-kitob</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#fff; --text:#151b2b; --muted:#7a869a;
+    --line:#e6eaf2; --brand:#2f6fed; --brand-soft:#eaf1ff; --ok:#1fa971; --ok-soft:#e6f7ef;
+    --shadow:0 6px 20px rgba(20,40,90,.06); --radius:16px;
+  }
+  body.tg{
+    --bg:var(--tg-theme-secondary-bg-color,#f4f6fb);
+    --card:var(--tg-theme-bg-color,#fff);
+    --text:var(--tg-theme-text-color,#151b2b);
+    --muted:var(--tg-theme-hint-color,#7a869a);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg);color:var(--text);padding:14px 12px 120px;line-height:1.4;}
+  .wrap{max-width:600px;margin:0 auto;}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .logo{width:44px;height:44px;border-radius:12px;flex:0 0 auto;background:linear-gradient(135deg,#2f6fed,#5b8bff);
+    display:flex;align-items:center;justify-content:center;font-size:22px;}
+  h1{font-size:20px;margin:0;font-weight:700;}
+  .top p{margin:2px 0 0;color:var(--muted);font-size:13px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:14px;margin-bottom:12px;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .card-head .idx{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;}
+  .badge{background:var(--brand-soft);color:var(--brand);font-weight:700;width:26px;height:26px;
+    border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .del{border:none;background:transparent;color:#e2517b;font-size:13px;font-weight:600;cursor:pointer;padding:6px;border-radius:8px;}
+  label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px 2px;font-weight:600;}
+  input,select{width:100%;border:1.5px solid var(--line);background:var(--card);color:var(--text);
+    border-radius:11px;padding:10px 11px;font-size:15px;outline:none;transition:border-color .15s;}
+  input:focus,select:focus{border-color:var(--brand);}
+  .row2{display:flex;gap:10px;}.row2>div{flex:1;}
+  .field{margin-bottom:11px;}
+  .unit{font-size:11px;color:var(--muted);font-weight:600;}
+
+  .parda-pick{display:flex;gap:8px;margin-top:4px;}
+  .chip{flex:1;border:1.5px solid var(--line);border-radius:11px;padding:9px 6px;text-align:center;
+    font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);user-select:none;}
+  .chip.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);}
+
+  .natija{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
+  .natija .hint{font-size:11px;color:var(--muted);margin:-4px 0 10px;}
+  .pblock{background:var(--brand-soft);border-radius:12px;padding:10px 11px;margin-bottom:9px;}
+  .pblock .ptop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .pblock .pname{font-weight:700;font-size:14px;color:var(--brand);}
+  .pblock .psum{font-weight:800;font-size:14px;}
+  .qgrid{display:flex;gap:7px;}
+  .qgrid>div{flex:1;}
+  .qgrid label{font-size:10.5px;margin-bottom:3px;}
+  .qgrid input{padding:8px 8px;font-size:14px;background:var(--card);border-radius:9px;}
+
+  .rtot{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;}
+  .rtot .v{font-weight:800;}
+
+  .add{width:100%;border:1.5px dashed var(--brand);background:var(--brand-soft);color:var(--brand);
+    border-radius:14px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;}
+
+  .narx-card .nhead{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
+  .narx-grid{display:flex;flex-wrap:wrap;gap:9px;}
+  .narx-grid>div{flex:1 1 30%;min-width:90px;}
+  .narx-grid label{font-size:11px;}
+
+  .total{background:linear-gradient(135deg,#12203c,#1e3a6b);color:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
+  .total h3{margin:0 0 10px;font-size:14px;font-weight:700;opacity:.85;}
+  .tgrand{font-size:26px;font-weight:800;margin:2px 0 12px;}
+  .tline{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.12);}
+  .tline:last-child{border-bottom:none;}
+  .tline .v{font-weight:700;}
+
+  .actions{margin-top:12px;display:flex;gap:10px;}
+  .btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;}
+  .btn-primary{background:var(--brand);color:#fff;}
+  .btn-ghost{background:var(--card);color:var(--text);border:1.5px solid var(--line);}
+  .footnote{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">🪟</div>
+    <div><h1>Parda Hisob-kitob</h1><p>Mato, lenta va kalso hisobi</p></div>
+  </div>
+
+  <div class="card narx-card">
+    <div class="nhead">Narxlar (so'm)</div>
+    <div class="narx-grid">
+      <div><label>Zashitniy /m</label><input type="number" inputmode="numeric" data-narx="zashitniy" placeholder="0"></div>
+      <div><label>Tul /m</label><input type="number" inputmode="numeric" data-narx="tul" placeholder="0"></div>
+      <div><label>Parter /m</label><input type="number" inputmode="numeric" data-narx="parter" placeholder="0"></div>
+      <div><label>Lenta /m</label><input type="number" inputmode="numeric" data-narx="karsaj" placeholder="0"></div>
+      <div><label>Kalso /dona</label><input type="number" inputmode="numeric" data-narx="kalso" placeholder="0"></div>
+    </div>
+  </div>
+
+  <div id="rooms"></div>
+  <button class="add" id="addBtn">+ Xona qo'shish</button>
+
+  <div class="total">
+    <h3>Umumiy hisob</h3>
+    <div class="tgrand" id="grand">0 so'm</div>
+    <div id="totBreak"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-ghost" id="copyBtn">📋 Nusxa</button>
+    <button class="btn btn-primary" id="sendBtn">✅ Yuborish</button>
+  </div>
+  <div class="footnote">Natija qiymatlari avtomatik tavsiya — har birini qo'lda tahrirlash mumkin.</div>
+</div>
+
+<script>
+/* Hisoblash mantig'i — index.html ichida (tashqi faylsiz) */
+const COEF_DEFAULT = { pataloshniy: 3, turba: 2, rils: 2.5 };
+const PARDA_TARTIBI = ["zashitniy","tul","parter"];
+function r2(n){ return Math.round(n*100)/100; }
+function kalsoSoni(uz, oraliq){ return Math.ceil(r2(uz)/oraliq - 1e-9); }
+function defaultTanlov(q){ return PARDA_TARTIBI.slice(0, q); }
+function matoUzunligi(tur, x, coef){
+  if(tur==='zashitniy') return x.eni + 0.20;
+  if(tur==='tul')       return x.eni * coef + 0.20;
+  if(tur==='parter')    return (x.boyi + 0.20) * 2;
+  return 0;
+}
+function aksessuar(tur, x, mato){
+  const t = x.karnizTuri;
+  if(t==='pataloshniy' || t==='rils'){
+    if(tur==='parter') return {karset:1.8, kalso:0};
+    return {karset:x.eni, kalso:0};
+  }
+  if(tur==='zashitniy') return {karset:0,    kalso:kalsoSoni(x.eni, 0.10)};
+  if(tur==='tul')       return {karset:mato, kalso:kalsoSoni(mato, 0.15)};
+  if(tur==='parter')    return {karset:6.0,  kalso:36};
+  return {karset:0, kalso:0};
+}
+
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if (tg){ tg.expand(); document.body.classList.add('tg'); }
+
+const PARDA = [
+  {key:'zashitniy', label:'Zashitniy'},
+  {key:'tul',       label:'Tul'},
+  {key:'parter',    label:'Parter'},
+];
+const TURI = {pataloshniy:'Pataloshniy', turba:'Turba', rils:'Rils'};
+
+const narx = {zashitniy:0, tul:0, parter:0, karsaj:0, kalso:0};
+let rooms = [];
+let seq = 0;
+
+const num = (v)=> parseFloat(v)||0;
+const fmtM = (m)=> (Math.round(m*100)/100).toFixed(2);
+const fmtSom = (n)=> Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+
+function newRoom(){
+  seq++;
+  const qator = 2, turi = 'pataloshniy';
+  return {
+    id:seq, nom:'', eni:'', boyi:'', qator, turi,
+    coef: COEF_DEFAULT[turi],
+    sel: selFromQator(qator),
+    q: {}   // {zashitniy:{mato,karset,kalso}, ...} joriy qiymatlar
+  };
+}
+function selFromQator(qator){
+  const d = defaultTanlov(qator);
+  return {zashitniy:d.includes('zashitniy'), tul:d.includes('tul'), parter:d.includes('parter')};
+}
+
+/* ---------- Bir parda uchun tavsiya qiymat ---------- */
+function tavsiya(room, key){
+  const x = {eni:num(room.eni), boyi:num(room.boyi), karnizTuri:room.turi};
+  const mato = matoUzunligi(key, x, room.coef);
+  const a = aksessuar(key, x, mato);
+  return {mato:Math.round(mato*100)/100, karset:Math.round(a.karset*100)/100, kalso:a.kalso};
+}
+
+/* ================= RENDER ================= */
+const roomsEl = document.getElementById('rooms');
+
+function addRoom(scroll){
+  const r = newRoom(); rooms.push(r);
+  roomsEl.appendChild(card(r, rooms.length-1));
+  recompute();
+  if(scroll) window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+}
+function renumber(){
+  [...roomsEl.children].forEach((c,i)=>{ const b=c.querySelector('.badge'); if(b) b.textContent=i+1; });
+}
+
+function card(r,i){
+  const el = document.createElement('div');
+  el.className='card';
+  el.innerHTML = `
+    <div class="card-head">
+      <div class="idx"><span class="badge">${i+1}</span> Xona</div>
+      <button class="del" data-act="del">🗑 O'chirish</button>
+    </div>
+    <div class="field"><label>Xona nomi</label>
+      <input type="text" data-f="nom" placeholder="Mehmonxona" value="${esc(r.nom)}"></div>
+    <div class="row2 field">
+      <div><label>Eni <span class="unit">(m)</span></label>
+        <input type="number" inputmode="decimal" step="0.01" data-f="eni" placeholder="3.0" value="${r.eni}"></div>
+      <div><label>Bo'yi <span class="unit">(m)</span></label>
+        <input type="number" inputmode="decimal" step="0.01" data-f="boyi" placeholder="2.8" value="${r.boyi}"></div>
+    </div>
+    <div class="row2 field">
+      <div><label>Karniz qatori</label>
+        <select data-f="qator">
+          ${[1,2,3].map(n=>`<option value="${n}" ${n===r.qator?'selected':''}>${n} qator</option>`).join('')}
+        </select></div>
+      <div><label>Karniz turi</label>
+        <select data-f="turi">
+          ${Object.keys(TURI).map(k=>`<option value="${k}" ${k===r.turi?'selected':''}>${TURI[k]}</option>`).join('')}
+        </select></div>
+    </div>
+    <div class="field"><label>Parda turi</label>
+      <div class="parda-pick">
+        ${PARDA.map(p=>`<div class="chip ${r.sel[p.key]?'on':''}" data-parda="${p.key}">${p.label}</div>`).join('')}
+      </div>
+    </div>
+    <div class="field" data-coefwrap style="${r.sel.tul?'':'display:none'}">
+      <label>Tul koeffitsienti</label>
+      <select data-f="coef">
+        ${[2,2.5,3].map(c=>`<option value="${c}" ${c===r.coef?'selected':''}>×${c}${c===COEF_DEFAULT[r.turi]?' (tavsiya)':''}</option>`).join('')}
+      </select>
+    </div>
+    <div class="natija" data-natija></div>
+  `;
+
+  el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+    rooms = rooms.filter(x=>x.id!==r.id);
+    el.remove(); renumber(); recompute();
+  });
+
+  el.querySelectorAll('[data-f]').forEach(inp=>{
+    const f = inp.getAttribute('data-f');
+    const ev = (inp.tagName==='SELECT') ? 'change' : 'input';
+    inp.addEventListener(ev, ()=>{
+      if(f==='qator'){ r.qator=parseInt(inp.value); r.sel=selFromQator(r.qator);
+        el.querySelectorAll('.chip').forEach(c=> c.classList.toggle('on', r.sel[c.dataset.parda])); }
+      else if(f==='turi'){ r.turi=inp.value; r.coef=COEF_DEFAULT[r.turi];
+        const cs=el.querySelector('[data-f="coef"]'); if(cs) cs.value=r.coef; refreshCoefOptions(el,r); }
+      else if(f==='coef'){ r.coef=parseFloat(inp.value); }
+      else { r[f]=inp.value; }
+      toggleCoef(el,r);
+      buildNatija(el,r);
+      recompute();
+    });
+  });
+
+  el.querySelectorAll('.chip').forEach(ch=>{
+    ch.addEventListener('click', ()=>{
+      const k=ch.dataset.parda; r.sel[k]=!r.sel[k]; ch.classList.toggle('on', r.sel[k]);
+      toggleCoef(el,r); buildNatija(el,r); recompute();
+    });
+  });
+
+  buildNatija(el,r);
+  return el;
+}
+
+function refreshCoefOptions(el,r){
+  const cs=el.querySelector('[data-f="coef"]'); if(!cs) return;
+  cs.innerHTML=[2,2.5,3].map(c=>`<option value="${c}" ${c===r.coef?'selected':''}>×${c}${c===COEF_DEFAULT[r.turi]?' (tavsiya)':''}</option>`).join('');
+}
+function toggleCoef(el,r){
+  const w=el.querySelector('[data-coefwrap]'); if(w) w.style.display = r.sel.tul?'':'none';
+}
+
+/* Natija bo'limini qayta quradi (tavsiya qiymatlar bilan) */
+function buildNatija(el,r){
+  const box = el.querySelector('[data-natija]');
+  const active = PARDA.filter(p=>r.sel[p.key]);
+  r.q = {};
+  if(!active.length || !(num(r.eni)>0)){
+    box.innerHTML = `<div class="hint">Parda tanlang va eni/bo'yini kiriting…</div>`;
+    return;
+  }
+  const turba = r.turi==='turba';
+  let html = `<div class="hint">Qiymatlar tavsiya — tahrirlash mumkin</div>`;
+  active.forEach(p=>{
+    const t = tavsiya(r, p.key);
+    r.q[p.key] = {mato:t.mato, karset:t.karset, kalso:t.kalso};
+    html += `
+      <div class="pblock" data-p="${p.key}">
+        <div class="ptop"><span class="pname">${p.label}</span><span class="psum" data-sum>0</span></div>
+        <div class="qgrid">
+          <div><label>Mato (m)</label><input type="number" step="0.01" data-q="mato" value="${t.mato}"></div>
+          <div><label>Lenta (m)</label><input type="number" step="0.01" data-q="karset" value="${t.karset}"></div>
+          ${turba?`<div><label>Kalso (dona)</label><input type="number" step="1" data-q="kalso" value="${t.kalso}"></div>`:``}
+        </div>
+      </div>`;
+  });
+  html += `<div class="rtot"><span>Xona jami</span><span class="v" data-rtot>0 so'm</span></div>`;
+  box.innerHTML = html;
+
+  box.querySelectorAll('[data-p]').forEach(pb=>{
+    const key=pb.dataset.p;
+    pb.querySelectorAll('[data-q]').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        r.q[key][inp.dataset.q] = num(inp.value);
+        recompute();
+      });
+    });
+  });
+}
+
+/* ================= HISOB ================= */
+function recompute(){
+  let grand=0;
+  const tot={zashitniy:0, tul:0, parter:0, karset:0, kalso:0};
+
+  rooms.forEach(r=>{
+    let rtot=0;
+    Object.keys(r.q).forEach(key=>{
+      const q=r.q[key];
+      const summa = q.mato*narx[key] + q.karset*narx.karsaj + (q.kalso||0)*narx.kalso;
+      rtot += summa; grand += summa;
+      tot[key]+=q.mato; tot.karset+=q.karset; tot.kalso+=(q.kalso||0);
+      const card = [...roomsEl.children].find(c=>c.__id===r.id) || findCard(r.id);
+      const pb = card && card.querySelector(`[data-p="${key}"] [data-sum]`);
+      if(pb) pb.textContent = fmtSom(summa)+" so'm";
+    });
+    const card = findCard(r.id);
+    const rt = card && card.querySelector('[data-rtot]');
+    if(rt) rt.textContent = fmtSom(rtot)+" so'm";
+  });
+
+  document.getElementById('grand').textContent = fmtSom(grand)+" so'm";
+  document.getElementById('totBreak').innerHTML = `
+    <div class="tline"><span>Zashitniy mato</span><span class="v">${fmtM(tot.zashitniy)} m</span></div>
+    <div class="tline"><span>Tul mato</span><span class="v">${fmtM(tot.tul)} m</span></div>
+    <div class="tline"><span>Parter mato</span><span class="v">${fmtM(tot.parter)} m</span></div>
+    <div class="tline"><span>Lenta jami</span><span class="v">${fmtM(tot.karset)} m</span></div>
+    <div class="tline"><span>Kalso jami</span><span class="v">${tot.kalso} dona</span></div>`;
+}
+
+function findCard(id){
+  return [...roomsEl.children][ rooms.findIndex(r=>r.id===id) ];
+}
+
+/* ================= HISOBOT ================= */
+function buildReport(){
+  let s="🪟 PARDA HISOB-KITOB\n\n";
+  rooms.forEach((r,i)=>{
+    if(!Object.keys(r.q).length) return;
+    s+=`${i+1}) ${r.nom||'Xona'} — ${fmtM(num(r.eni))}×${fmtM(num(r.boyi))} m, ${r.qator}-qator ${TURI[r.turi]}\n`;
+    let rtot=0;
+    Object.keys(r.q).forEach(key=>{
+      const q=r.q[key];
+      const summa=q.mato*narx[key]+q.karset*narx.karsaj+(q.kalso||0)*narx.kalso;
+      rtot+=summa;
+      const kal = r.turi==='turba' ? `, kalso ${q.kalso} dona` : '';
+      s+=`   • ${PARDA.find(p=>p.key===key).label}: mato ${fmtM(q.mato)}m, lenta ${fmtM(q.karset)}m${kal} = ${fmtSom(summa)} so'm\n`;
+    });
+    s+=`   Xona jami: ${fmtSom(rtot)} so'm\n\n`;
+  });
+  s+="━━━━━━━━━━━━━━\n"+document.getElementById('grand').textContent+" — UMUMIY JAMI";
+  return s;
+}
+
+/* ================= EVENTLAR ================= */
+document.querySelectorAll('[data-narx]').forEach(inp=>{
+  inp.addEventListener('input', ()=>{ narx[inp.dataset.narx]=num(inp.value); recompute(); });
+});
+document.getElementById('addBtn').addEventListener('click', ()=> addRoom(true));
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  const t=buildReport();
+  (navigator.clipboard?.writeText(t)||Promise.reject()).then(()=>toast('Nusxa olindi ✓'), ()=>fallbackCopy(t));
+});
+document.getElementById('sendBtn').addEventListener('click', ()=>{
+  const t=buildReport();
+  if(tg){ tg.sendData(t); tg.close(); } else { fallbackCopy(t); toast('Matn nusxa olindi'); }
+});
+
+function esc(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function fallbackCopy(t){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(a);}
+let tt;function toast(m){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';e.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#12203c;color:#fff;padding:10px 18px;border-radius:12px;font-size:14px;z-index:99;opacity:0;transition:opacity .2s';document.body.appendChild(e);}e.textContent=m;e.style.opacity='1';clearTimeout(tt);tt=setTimeout(()=>e.style.opacity='0',1500);}
+
+addRoom(false);
+</script>
+</body>
+</html>
