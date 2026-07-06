@@ -803,8 +803,8 @@ addRoom(false);
 
 /* ===== Bo'limlar (tab) + rollar ===== */
 /* Admin Telegram ID lari. Bo'sh bo'lsa — hamma admin (test uchun).
-   O'z ID'ingizni qo'shsangiz: faqat siz admin bo'lasiz, qolganlar mijoz. */
-const ADMIN_IDS = [];
+   Yangi admin qo'shish: [2090652095, 123456789] */
+const ADMIN_IDS = [2090652095];
 function currentUser(){ return (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null; }
 function isAdmin(){
   const u=currentUser();
