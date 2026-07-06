@@ -1,0 +1,11 @@
+# Bot va maxfiy fayllar
+bot.py
+hisobot.db
+requirements.txt
+
+# IDE va tool papkalari
+.idea/
+.claude/
+.venv/
+__pycache__/
+*.pyc

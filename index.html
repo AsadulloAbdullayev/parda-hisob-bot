@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Parda Hisob-kitob</title>
+<title>Rayyon Pardalar — Hisob-kitob</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --bg:#f4f6fb; --card:#fff; --text:#151b2b; --muted:#7a869a;
-    --line:#e6eaf2; --brand:#2f6fed; --brand-soft:#eaf1ff; --ok:#1fa971; --ok-soft:#e6f7ef;
+    --line:#e6eaf2; --brand:#2f6fed; --brand-soft:#eaf1ff; --ok:#1fa971;
     --shadow:0 6px 20px rgba(20,40,90,.06); --radius:16px;
   }
   body.tg{
@@ -19,86 +20,133 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--bg);color:var(--text);padding:14px 12px 120px;line-height:1.4;}
-  .wrap{max-width:600px;margin:0 auto;}
-  .top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-  .logo{width:44px;height:44px;border-radius:12px;flex:0 0 auto;background:linear-gradient(135deg,#2f6fed,#5b8bff);
-    display:flex;align-items:center;justify-content:center;font-size:22px;}
-  h1{font-size:20px;margin:0;font-weight:700;}
-  .top p{margin:2px 0 0;color:var(--muted);font-size:13px;}
+    background:var(--bg);color:var(--text);padding:0 0 120px;line-height:1.4;}
+  .wrap{max-width:600px;margin:0 auto;padding:0 12px;}
+
+  .brand{background:linear-gradient(135deg,#1e3a6b,#2f6fed);color:#fff;
+    padding:22px 18px;border-radius:0 0 24px 24px;margin-bottom:14px;display:flex;align-items:center;gap:13px;}
+  .brand .blogo{width:48px;height:48px;border-radius:13px;background:rgba(255,255,255,.18);
+    display:flex;align-items:center;justify-content:center;font-size:26px;flex:0 0 auto;}
+  .brand h1{margin:0;font-size:20px;font-weight:800;letter-spacing:.3px;}
+  .brand p{margin:3px 0 0;font-size:12.5px;opacity:.85;}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
     box-shadow:var(--shadow);padding:14px;margin-bottom:12px;}
   .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
   .card-head .idx{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;}
   .badge{background:var(--brand-soft);color:var(--brand);font-weight:700;width:26px;height:26px;
-    border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+    border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto;}
+  .hbtns{display:flex;gap:2px;}
   .del{border:none;background:transparent;color:#e2517b;font-size:13px;font-weight:600;cursor:pointer;padding:6px;border-radius:8px;}
+  .cpy{border:none;background:transparent;color:var(--brand);font-size:13px;font-weight:600;cursor:pointer;padding:6px;border-radius:8px;}
   label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px 2px;font-weight:600;}
-  input,select{width:100%;border:1.5px solid var(--line);background:var(--card);color:var(--text);
-    border-radius:11px;padding:10px 11px;font-size:15px;outline:none;transition:border-color .15s;}
-  input:focus,select:focus{border-color:var(--brand);}
+  input,select,textarea{width:100%;border:1.5px solid var(--line);background:var(--card);color:var(--text);
+    border-radius:11px;padding:10px 11px;font-size:15px;outline:none;transition:border-color .15s;font-family:inherit;}
+  input:focus,select:focus,textarea:focus{border-color:var(--brand);}
+  textarea{resize:vertical;min-height:42px;}
   .row2{display:flex;gap:10px;}.row2>div{flex:1;}
   .field{margin-bottom:11px;}
   .unit{font-size:11px;color:var(--muted);font-weight:600;}
+  .nhead{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
 
-  .parda-pick{display:flex;gap:8px;margin-top:4px;}
-  .chip{flex:1;border:1.5px solid var(--line);border-radius:11px;padding:9px 6px;text-align:center;
-    font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);user-select:none;}
+  .fotobtn{display:flex;align-items:center;gap:11px;border:1.5px dashed var(--brand);background:var(--brand-soft);
+    border-radius:11px;padding:9px 11px;cursor:pointer;color:var(--brand);font-size:13px;font-weight:700;}
+  .fotobtn img{width:42px;height:42px;border-radius:8px;object-fit:cover;display:none;flex:0 0 auto;}
+
+  .parda-pick{display:flex;gap:7px;margin-top:4px;flex-wrap:wrap;}
+  .chip{flex:1;min-width:70px;border:1.5px solid var(--line);border-radius:11px;padding:9px 4px;text-align:center;
+    font-size:12.5px;font-weight:600;cursor:pointer;color:var(--muted);user-select:none;white-space:nowrap;}
   .chip.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);}
 
   .natija{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
   .natija .hint{font-size:11px;color:var(--muted);margin:-4px 0 10px;}
-  .pblock{background:var(--brand-soft);border-radius:12px;padding:10px 11px;margin-bottom:9px;}
-  .pblock .ptop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-  .pblock .pname{font-weight:700;font-size:14px;color:var(--brand);}
-  .pblock .psum{font-weight:800;font-size:14px;}
-  .qgrid{display:flex;gap:7px;}
-  .qgrid>div{flex:1;}
-  .qgrid label{font-size:10.5px;margin-bottom:3px;}
-  .qgrid input{padding:8px 8px;font-size:14px;background:var(--card);border-radius:9px;}
+  .pblock{background:var(--brand-soft);border-radius:12px;padding:11px;margin-bottom:9px;}
+  .ptop{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:9px;}
+  .pname{font-weight:700;font-size:14px;color:var(--brand);}
+  .mnamei{flex:1;min-width:72px;width:auto;padding:6px 8px;font-size:12px;border-radius:9px;background:var(--card);}
+  .ksel{width:auto;padding:6px 7px;font-size:12px;border-radius:9px;background:var(--card);border-color:var(--line);}
+  .psum{margin-left:auto;font-weight:800;font-size:14px;white-space:nowrap;}
 
-  .rtot{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;}
+  .qline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;font-size:13px;}
+  .qlbl{width:52px;color:var(--muted);font-weight:600;flex:0 0 auto;}
+  .accnamei{flex:1 1 76px;min-width:68px;width:auto;padding:6px 7px;font-size:12px;border-radius:9px;background:var(--card);}
+  .qi{width:52px;flex:0 0 auto;padding:7px 4px;font-size:13px;border-radius:9px;background:var(--card);text-align:center;}
+  .pi{width:70px;flex:0 0 auto;padding:7px 4px;font-size:13px;border-radius:9px;background:var(--card);text-align:center;}
+  .qx,.qeq{color:var(--muted);font-size:12px;flex:0 0 auto;}
+  .qsum{flex:1;text-align:right;font-weight:700;min-width:58px;}
+  .exn{flex:1;min-width:78px;width:auto;padding:7px 8px;font-size:13px;border-radius:9px;background:var(--card);}
+  .exdel{border:none;background:transparent;color:#e2517b;font-size:15px;cursor:pointer;flex:0 0 auto;padding:0 2px;}
+  .addacc{margin-left:auto;border:1.5px solid var(--brand);color:var(--brand);background:var(--card);
+    border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;}
+  .tikchk{display:flex;align-items:center;gap:6px;color:var(--brand);font-weight:700;font-size:12.5px;flex:0 0 auto;cursor:pointer;}
+  .tikchk input{width:17px;height:17px;padding:0;margin:0;accent-color:var(--brand);}
+
+  .rtot{display:flex;justify-content:space-between;margin-top:8px;font-size:15px;padding-top:9px;border-top:1px solid var(--line);}
   .rtot .v{font-weight:800;}
 
   .add{width:100%;border:1.5px dashed var(--brand);background:var(--brand-soft);color:var(--brand);
     border-radius:14px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;}
 
-  .narx-card .nhead{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
-  .narx-grid{display:flex;flex-wrap:wrap;gap:9px;}
-  .narx-grid>div{flex:1 1 30%;min-width:90px;}
-  .narx-grid label{font-size:11px;}
-
   .total{background:linear-gradient(135deg,#12203c,#1e3a6b);color:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
-  .total h3{margin:0 0 10px;font-size:14px;font-weight:700;opacity:.85;}
+  .total h3{margin:0 0 6px;font-size:14px;font-weight:700;opacity:.85;}
   .tgrand{font-size:26px;font-weight:800;margin:2px 0 12px;}
-  .tline{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.12);}
+  .tline{display:flex;justify-content:space-between;gap:8px;padding:5px 0;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.12);}
   .tline:last-child{border-bottom:none;}
-  .tline .v{font-weight:700;}
+  .tline .v{font-weight:700;white-space:nowrap;}
 
   .actions{margin-top:12px;display:flex;gap:10px;}
   .btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;}
   .btn-primary{background:var(--brand);color:#fff;}
   .btn-ghost{background:var(--card);color:var(--text);border:1.5px solid var(--line);}
   .footnote{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;}
+
+  /* ===== Chek modal ===== */
+  .modal{position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:200;display:flex;
+    align-items:flex-start;justify-content:center;overflow:auto;padding:18px 12px;}
+  .modal-inner{width:100%;max-width:380px;}
+  .modal-actions{display:flex;gap:10px;margin-top:12px;}
+  .chk{background:#fff;color:#151b2b;border-radius:14px;overflow:hidden;font-size:12.5px;border:1px solid #e6eaf2;}
+  .chk-top{background:#eaf1ff;padding:16px;text-align:center;border-bottom:1px dashed #b9d0f7;}
+  .chk-top .nm{font-size:17px;font-weight:800;color:#2f6fed;letter-spacing:.5px;}
+  .chk-top .sub{font-size:11px;color:#6b7688;margin-top:2px;}
+  .chk-title{text-align:center;font-size:11px;font-weight:700;letter-spacing:1px;color:#7a869a;padding:9px 0;border-bottom:1px solid #eef1f6;}
+  .chk-meta{display:flex;flex-wrap:wrap;gap:2px 14px;padding:10px 16px;border-bottom:1px solid #eef1f6;font-size:12px;color:#6b7688;}
+  .chk-meta b{color:#151b2b;font-weight:600;}
+  .chk-room{border-bottom:1px solid #eef1f6;}
+  .chk-rh{display:flex;justify-content:space-between;align-items:center;padding:9px 16px 6px;}
+  .chk-rh .rn{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:7px;}
+  .chk-rh .rn img{width:28px;height:28px;border-radius:6px;object-fit:cover;}
+  .chk-rh .rt{font-weight:700;color:#2f6fed;}
+  .chk table{width:100%;border-collapse:collapse;table-layout:fixed;}
+  .chk th{font-size:9.5px;font-weight:600;color:#9aa4b4;text-transform:uppercase;padding:0 16px 4px;text-align:right;}
+  .chk th.l{text-align:left;}
+  .chk td{padding:3px 16px 3px 0;font-size:12px;text-align:right;color:#5a6577;}
+  .chk td.l{text-align:left;color:#151b2b;padding-left:16px;padding-right:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chk td.s{color:#151b2b;font-weight:700;}
+  .chk tr:last-child td{padding-bottom:9px;}
+  .chk-agg{background:#f7fafd;}
+  .chk-agg .chk-rh .rn{color:#2f6fed;}
+  .chk-grand{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#eaf1ff;}
+  .chk-grand .gl{font-size:12px;font-weight:700;color:#2f6fed;letter-spacing:.5px;}
+  .chk-grand .gv{font-size:17px;font-weight:800;color:#2f6fed;}
+  .chk-foot{text-align:center;padding:12px 16px 16px;font-size:11px;color:#6b7688;}
+  .chk-foot .th{font-weight:700;color:#151b2b;font-size:12.5px;margin-bottom:3px;}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <div class="logo">🪟</div>
-    <div><h1>Parda Hisob-kitob</h1><p>Mato, lenta va kalso hisobi</p></div>
-  </div>
 
-  <div class="card narx-card">
-    <div class="nhead">Narxlar (so'm)</div>
-    <div class="narx-grid">
-      <div><label>Zashitniy /m</label><input type="number" inputmode="numeric" data-narx="zashitniy" placeholder="0"></div>
-      <div><label>Tul /m</label><input type="number" inputmode="numeric" data-narx="tul" placeholder="0"></div>
-      <div><label>Parter /m</label><input type="number" inputmode="numeric" data-narx="parter" placeholder="0"></div>
-      <div><label>Lenta /m</label><input type="number" inputmode="numeric" data-narx="karsaj" placeholder="0"></div>
-      <div><label>Kalso /dona</label><input type="number" inputmode="numeric" data-narx="kalso" placeholder="0"></div>
-    </div>
+<div class="brand">
+  <div class="blogo">🪟</div>
+  <div><h1>RAYYON PARDALAR</h1><p>Sifatli pardalar va to'qimachilik mahsulotlari</p></div>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="nhead">👤 Mijoz ma'lumotlari</div>
+    <div class="field"><label>Ism</label><input type="text" data-m="nom" placeholder="Mijoz ismi"></div>
+    <div class="field"><label>Telefon</label><input type="tel" data-m="tel" placeholder="+998 __ ___ __ __"></div>
+    <div class="field"><label>Manzil</label><textarea data-m="manzil" placeholder="Manzilni yozing…"></textarea></div>
+    <div class="field" style="margin-bottom:0"><label>Izoh</label><textarea data-m="izoh" placeholder="Qo'shimcha izoh…"></textarea></div>
   </div>
 
   <div id="rooms"></div>
@@ -111,76 +159,149 @@
   </div>
 
   <div class="actions">
+    <button class="btn btn-primary" id="chekBtn" style="flex:2">🧾 Chek tayyorlash</button>
     <button class="btn btn-ghost" id="copyBtn">📋 Nusxa</button>
-    <button class="btn btn-primary" id="sendBtn">✅ Yuborish</button>
   </div>
-  <div class="footnote">Natija qiymatlari avtomatik tavsiya — har birini qo'lda tahrirlash mumkin.</div>
+  <div class="actions" style="margin-top:8px">
+    <button class="btn btn-ghost" id="sendBtn" style="flex:1">✅ Botga yuborish (matn)</button>
+  </div>
+  <div class="footnote">Miqdorlar avtomatik tavsiya — har birini va narxni qo'lda tahrirlash mumkin.</div>
+</div>
+
+<div class="modal" id="chekModal" style="display:none">
+  <div class="modal-inner">
+    <div id="chekWrap"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="chekSave" style="flex:2">📷 Rasm saqlash / ulashish</button>
+      <button class="btn btn-ghost" id="chekClose">Yopish</button>
+    </div>
+  </div>
 </div>
 
 <script>
-/* Hisoblash mantig'i — index.html ichida (tashqi faylsiz) */
+/* ===== Hisoblash mantig'i ===== */
 const COEF_DEFAULT = { pataloshniy: 3, turba: 2, rils: 2.5 };
 const PARDA_TARTIBI = ["zashitniy","tul","parter"];
+const TIKISH_NARX = 40000;
 function r2(n){ return Math.round(n*100)/100; }
-function kalsoSoni(uz, oraliq){ return Math.ceil(r2(uz)/oraliq - 1e-9); }
+function ceilQ(uz, oraliq){ return Math.ceil(r2(uz)/oraliq - 1e-9); }
+function evenCeil(n){ n=Math.ceil(n-1e-9); return n%2 ? n+1 : n; }
 function defaultTanlov(q){ return PARDA_TARTIBI.slice(0, q); }
 function matoUzunligi(tur, x, coef){
-  if(tur==='zashitniy') return x.eni + 0.20;
-  if(tur==='tul')       return x.eni * coef + 0.20;
-  if(tur==='parter')    return (x.boyi + 0.20) * 2;
+  const kind = tur==='parter2' ? 'parter' : tur;
+  if(kind==='zashitniy') return x.eni + 0.20;
+  if(kind==='tul')       return x.eni * coef + 0.20;
+  if(kind==='parter')    return (x.boyi + 0.20) * 2;
   return 0;
 }
-function aksessuar(tur, x, mato){
-  const t = x.karnizTuri;
+function accLines(tur, x, mato, kalsoTuri){
+  const kind = tur==='parter2' ? 'parter' : tur;
+  const t=x.karnizTuri, eni=x.eni;
+  const L=[];
   if(t==='pataloshniy' || t==='rils'){
-    if(tur==='parter') return {karset:1.8, kalso:0};
-    return {karset:x.eni, kalso:0};
+    L.push({f:'karsaj', name:'Karsaj', unit:'m', q: kind==='parter'?1.8:eni});
+    return L;
   }
-  if(tur==='zashitniy') return {karset:0,    kalso:kalsoSoni(x.eni, 0.10)};
-  if(tur==='tul')       return {karset:mato, kalso:kalsoSoni(mato, 0.15)};
-  if(tur==='parter')    return {karset:6.0,  kalso:36};
-  return {karset:0, kalso:0};
+  if(kalsoTuri==='radnoy'){
+    L.push({f:'karsaj', name:'Karsaj', unit:'m', q: kind==='parter'?1.8:eni});
+    L.push({f:'radnoy', name:'Radnoy kalso', unit:'dona', q: ceilQ(eni,0.10)});
+  } else {
+    if(kind==='zashitniy'){ L.push({f:'kalso', name:'Kalso', unit:'dona', q:evenCeil(eni/0.10)}); }
+    else if(kind==='tul'){ L.push({f:'karset', name:'Karset', unit:'m', q:mato});
+                           L.push({f:'kalso', name:'Kalso', unit:'dona', q:evenCeil(mato/0.15)}); }
+    else { L.push({f:'karset', name:'Karset', unit:'m', q:6.0});
+           L.push({f:'kalso', name:'Kalso', unit:'dona', q:36}); }
+  }
+  return L;
 }
 
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 if (tg){ tg.expand(); document.body.classList.add('tg'); }
 
 const PARDA = [
-  {key:'zashitniy', label:'Zashitniy'},
+  {key:'zashitniy', label:'Zashita'},
   {key:'tul',       label:'Tul'},
   {key:'parter',    label:'Parter'},
+  {key:'parter2',   label:'Parter 2'},
 ];
 const TURI = {pataloshniy:'Pataloshniy', turba:'Turba', rils:'Rils'};
+const KTOG = {kalso:'Kalso', radnoy:'Radnoy kalso'};
 
-const narx = {zashitniy:0, tul:0, parter:0, karsaj:0, kalso:0};
 let rooms = [];
 let seq = 0;
+let mijoz = {nom:'', tel:'', manzil:'', izoh:''};
+const defNarx = {};
 
 const num = (v)=> parseFloat(v)||0;
 const fmtM = (m)=> (Math.round(m*100)/100).toFixed(2);
 const fmtSom = (n)=> Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const fmtQ = (v,unit)=> unit==='dona' ? String(Math.round(v)) : fmtM(v);
 
+function dkey(key,f){ return f==='mato' ? 'mato_'+key : f; }
+function getDef(key,f){ return defNarx[dkey(key,f)] || 0; }
+function setDef(key,f,v){ defNarx[dkey(key,f)] = v; }
+
+function pardaCfg(){ return {kturi:'pataloshniy', kalsoTuri:'kalso', name:''}; }
 function newRoom(){
   seq++;
-  const qator = 2, turi = 'pataloshniy';
+  const qator = 2;
   return {
-    id:seq, nom:'', eni:'', boyi:'', qator, turi,
-    coef: COEF_DEFAULT[turi],
+    id:seq, nom:'', eni:'', boyi:'', qator, foto:null,
     sel: selFromQator(qator),
-    q: {}   // {zashitniy:{mato,karset,kalso}, ...} joriy qiymatlar
+    cfg: {
+      zashitniy: pardaCfg(),
+      tul: Object.assign(pardaCfg(), {coef:COEF_DEFAULT['pataloshniy']}),
+      parter: pardaCfg(),
+      parter2: pardaCfg(),
+    },
+    karnizOn:true, karnizNom:'', karnizP:0,
+    tikOn:true, tikP:TIKISH_NARX,
+    extra: [],
+    q: {}
   };
 }
 function selFromQator(qator){
   const d = defaultTanlov(qator);
-  return {zashitniy:d.includes('zashitniy'), tul:d.includes('tul'), parter:d.includes('parter')};
+  return {zashitniy:d.includes('zashitniy'), tul:d.includes('tul'), parter:d.includes('parter'), parter2:false};
 }
 
-/* ---------- Bir parda uchun tavsiya qiymat ---------- */
 function tavsiya(room, key){
-  const x = {eni:num(room.eni), boyi:num(room.boyi), karnizTuri:room.turi};
-  const mato = matoUzunligi(key, x, room.coef);
-  const a = aksessuar(key, x, mato);
-  return {mato:Math.round(mato*100)/100, karset:Math.round(a.karset*100)/100, kalso:a.kalso};
+  const cfg = room.cfg[key];
+  const coef = key==='tul' ? cfg.coef : COEF_DEFAULT[cfg.kturi];
+  const x = {eni:num(room.eni), boyi:num(room.boyi), karnizTuri:cfg.kturi};
+  const mato = matoUzunligi(key, x, coef);
+  const acc = accLines(key, x, mato, cfg.kalsoTuri).map(a=>({...a, q:r2(a.q)}));
+  return {mato:r2(mato), acc};
+}
+
+/* ===== Nomi bo'yicha jamlash ===== */
+function mergePush(arr, l){
+  const e = arr.find(x=>x.name===l.name && x.unit===l.unit);
+  if(e){ e.qty+=l.qty; e.summa+=l.summa; if(e.narx!==l.narx) e.narx=null; }
+  else arr.push({...l});
+}
+function accName(a){ return (a.uname && a.uname.trim()) ? a.uname.trim() : a.name; }
+function roomLines(r){
+  const lines=[]; let matoSum=0;
+  Object.keys(r.q).forEach(key=>{
+    const it=r.q[key];
+    const nm = r.cfg[key].name || PARDA.find(x=>x.key===key).label;
+    const ms=it.mato.q||0, mp=it.mato.p||0;
+    matoSum+=ms;
+    if(ms||mp) mergePush(lines,{name:nm, qty:ms, unit:'m', narx:mp, summa:ms*mp});
+    it.acc.forEach(a=>{ const q=a.q||0,p=a.p||0; if(q||p) mergePush(lines,{name:accName(a), qty:q, unit:a.unit, narx:p, summa:q*p}); });
+  });
+  if(r.karnizOn && num(r.eni)>0){ const q=num(r.eni), p=r.karnizP||0; mergePush(lines,{name:r.karnizNom||'Karniz', qty:q, unit:'m', narx:p, summa:q*p}); }
+  if(r.tikOn && matoSum>0){ const p=r.tikP||0; mergePush(lines,{name:'Tikish', qty:matoSum, unit:'m', narx:p, summa:matoSum*p}); }
+  r.extra.forEach(x=>{ const q=num(x.q),p=num(x.p); if(x.name||q*p) mergePush(lines,{name:x.name||'Aksessuar', qty:q, unit:'', narx:p, summa:q*p}); });
+  const total = lines.reduce((s,l)=>s+l.summa,0);
+  return {lines, total, matoSum};
+}
+function validRooms(){ return rooms.filter(r=>Object.keys(r.q).length && num(r.eni)>0); }
+function aggAll(){
+  const agg=[];
+  validRooms().forEach(r=> roomLines(r).lines.forEach(l=> mergePush(agg,{...l})) );
+  return agg;
 }
 
 /* ================= RENDER ================= */
@@ -192,9 +313,21 @@ function addRoom(scroll){
   recompute();
   if(scroll) window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
 }
+function cloneRoom(src){
+  seq++;
+  const c = JSON.parse(JSON.stringify({...src, foto:null}));
+  c.id = seq; c.foto = src.foto;
+  rooms.push(c);
+  roomsEl.appendChild(card(c, rooms.length-1));
+  recompute();
+  window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+  toast('Xona nusxalandi ✓');
+}
 function renumber(){
   [...roomsEl.children].forEach((c,i)=>{ const b=c.querySelector('.badge'); if(b) b.textContent=i+1; });
 }
+function findCard(id){ return [...roomsEl.children][ rooms.findIndex(r=>r.id===id) ]; }
+function refresh(el,r){ buildNatija(el,r); buildExtras(el,r); recompute(); }
 
 function card(r,i){
   const el = document.createElement('div');
@@ -202,43 +335,48 @@ function card(r,i){
   el.innerHTML = `
     <div class="card-head">
       <div class="idx"><span class="badge">${i+1}</span> Xona</div>
-      <button class="del" data-act="del">🗑 O'chirish</button>
+      <div class="hbtns">
+        <button class="cpy" data-act="copy">⧉ Nusxa</button>
+        <button class="del" data-act="del">🗑</button>
+      </div>
     </div>
     <div class="field"><label>Xona nomi</label>
       <input type="text" data-f="nom" placeholder="Mehmonxona" value="${esc(r.nom)}"></div>
+    <div class="field"><label>Xona rasmi</label>
+      <label class="fotobtn">
+        <img data-fimg ${r.foto?`src="${r.foto}" style="display:block"`:''}>
+        <span data-ftext>${r.foto?"✓ Rasm qo'shildi — o'zgartirish":'📷 Rasm tanlash'}</span>
+        <input type="file" accept="image/*" hidden data-foto>
+      </label></div>
     <div class="row2 field">
       <div><label>Eni <span class="unit">(m)</span></label>
         <input type="number" inputmode="decimal" step="0.01" data-f="eni" placeholder="3.0" value="${r.eni}"></div>
       <div><label>Bo'yi <span class="unit">(m)</span></label>
         <input type="number" inputmode="decimal" step="0.01" data-f="boyi" placeholder="2.8" value="${r.boyi}"></div>
     </div>
-    <div class="row2 field">
-      <div><label>Karniz qatori</label>
-        <select data-f="qator">
-          ${[1,2,3].map(n=>`<option value="${n}" ${n===r.qator?'selected':''}>${n} qator</option>`).join('')}
-        </select></div>
-      <div><label>Karniz turi</label>
-        <select data-f="turi">
-          ${Object.keys(TURI).map(k=>`<option value="${k}" ${k===r.turi?'selected':''}>${TURI[k]}</option>`).join('')}
-        </select></div>
-    </div>
+    <div class="field" style="max-width:48%"><label>Karniz qatori</label>
+      <select data-f="qator">
+        ${[1,2,3].map(n=>`<option value="${n}" ${n===r.qator?'selected':''}>${n} qator</option>`).join('')}
+      </select></div>
     <div class="field"><label>Parda turi</label>
       <div class="parda-pick">
         ${PARDA.map(p=>`<div class="chip ${r.sel[p.key]?'on':''}" data-parda="${p.key}">${p.label}</div>`).join('')}
       </div>
     </div>
-    <div class="field" data-coefwrap style="${r.sel.tul?'':'display:none'}">
-      <label>Tul koeffitsienti</label>
-      <select data-f="coef">
-        ${[2,2.5,3].map(c=>`<option value="${c}" ${c===r.coef?'selected':''}>×${c}${c===COEF_DEFAULT[r.turi]?' (tavsiya)':''}</option>`).join('')}
-      </select>
-    </div>
     <div class="natija" data-natija></div>
+    <div data-extras></div>
+    <div class="rtot"><span>Xona jami</span><span class="v" data-rtot>0 so'm</span></div>
   `;
 
   el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
     rooms = rooms.filter(x=>x.id!==r.id);
     el.remove(); renumber(); recompute();
+  });
+  el.querySelector('[data-act="copy"]').addEventListener('click', ()=> cloneRoom(r));
+
+  el.querySelector('[data-foto]').addEventListener('change', (e)=>{
+    const file=e.target.files && e.target.files[0];
+    if(file) setFoto(r, file, el.querySelector('[data-fimg]'), el.querySelector('[data-ftext]'));
   });
 
   el.querySelectorAll('[data-f]').forEach(inp=>{
@@ -246,131 +384,338 @@ function card(r,i){
     const ev = (inp.tagName==='SELECT') ? 'change' : 'input';
     inp.addEventListener(ev, ()=>{
       if(f==='qator'){ r.qator=parseInt(inp.value); r.sel=selFromQator(r.qator);
-        el.querySelectorAll('.chip').forEach(c=> c.classList.toggle('on', r.sel[c.dataset.parda])); }
-      else if(f==='turi'){ r.turi=inp.value; r.coef=COEF_DEFAULT[r.turi];
-        const cs=el.querySelector('[data-f="coef"]'); if(cs) cs.value=r.coef; refreshCoefOptions(el,r); }
-      else if(f==='coef'){ r.coef=parseFloat(inp.value); }
+        el.querySelectorAll('.chip').forEach(c=> c.classList.toggle('on', !!r.sel[c.dataset.parda])); }
       else { r[f]=inp.value; }
-      toggleCoef(el,r);
-      buildNatija(el,r);
-      recompute();
+      refresh(el,r);
     });
   });
 
   el.querySelectorAll('.chip').forEach(ch=>{
     ch.addEventListener('click', ()=>{
       const k=ch.dataset.parda; r.sel[k]=!r.sel[k]; ch.classList.toggle('on', r.sel[k]);
-      toggleCoef(el,r); buildNatija(el,r); recompute();
+      refresh(el,r);
     });
   });
 
-  buildNatija(el,r);
+  buildNatija(el,r); buildExtras(el,r);
   return el;
 }
 
-function refreshCoefOptions(el,r){
-  const cs=el.querySelector('[data-f="coef"]'); if(!cs) return;
-  cs.innerHTML=[2,2.5,3].map(c=>`<option value="${c}" ${c===r.coef?'selected':''}>×${c}${c===COEF_DEFAULT[r.turi]?' (tavsiya)':''}</option>`).join('');
-}
-function toggleCoef(el,r){
-  const w=el.querySelector('[data-coefwrap]'); if(w) w.style.display = r.sel.tul?'':'none';
+function setFoto(r, file, imgEl, textEl){
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const k=Math.min(1, 400/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      r.foto=c.toDataURL('image/jpeg',0.82);
+      if(imgEl){ imgEl.src=r.foto; imgEl.style.display='block'; }
+      if(textEl){ textEl.textContent="✓ Rasm qo'shildi — o'zgartirish"; }
+    };
+    img.src=rd.result;
+  };
+  rd.readAsDataURL(file);
 }
 
-/* Natija bo'limini qayta quradi (tavsiya qiymatlar bilan) */
+/* Parda bloklari */
 function buildNatija(el,r){
   const box = el.querySelector('[data-natija]');
   const active = PARDA.filter(p=>r.sel[p.key]);
-  r.q = {};
+  const oldQ = r.q; r.q = {};
   if(!active.length || !(num(r.eni)>0)){
     box.innerHTML = `<div class="hint">Parda tanlang va eni/bo'yini kiriting…</div>`;
     return;
   }
-  const turba = r.turi==='turba';
-  let html = `<div class="hint">Qiymatlar tavsiya — tahrirlash mumkin</div>`;
+  let html = `<div class="hint">Har mahsulot uchun nom, miqdor va narxni tahrirlash mumkin</div>`;
   active.forEach(p=>{
-    const t = tavsiya(r, p.key);
-    r.q[p.key] = {mato:t.mato, karset:t.karset, kalso:t.kalso};
+    const key=p.key;
+    const t = tavsiya(r, key);
+    const prev = oldQ[key] || {};
+    const prevAcc = prev.acc || [];
+    r.q[key] = {
+      mato: {q:t.mato, p: prev.mato?prev.mato.p:getDef(key,'mato')},
+      acc:  t.acc.map(a=>{ const pa=prevAcc.find(x=>x.f===a.f); return {...a, p: pa?pa.p:getDef(key,a.f), uname: pa?pa.uname:''}; })
+    };
+    const coefSel = key==='tul' ? `
+      <select class="ksel" data-coefp>
+        ${[2,2.5,3].map(c=>`<option value="${c}" ${c===r.cfg.tul.coef?'selected':''}>×${c}</option>`).join('')}
+      </select>` : '';
+    const ktogSel = r.cfg[key].kturi==='turba' ? `
+      <select class="ksel" data-ktog>
+        ${Object.keys(KTOG).map(k=>`<option value="${k}" ${k===r.cfg[key].kalsoTuri?'selected':''}>${KTOG[k]}</option>`).join('')}
+      </select>` : '';
+    const matoLine = `<div class="qline">
+        <span class="qlbl">Mato</span>
+        <input class="qi" type="number" step="0.01" data-q="mato" value="${r.q[key].mato.q}">
+        <span class="qx">m ×</span>
+        <input class="pi" type="number" inputmode="numeric" data-pr="mato" value="${r.q[key].mato.p||''}" placeholder="narx">
+        <span class="qeq">=</span><span class="qsum" data-ls="mato">0</span>
+      </div>`;
+    const accLinesHtml = r.q[key].acc.map(a=>`<div class="qline">
+        <input class="accnamei" data-accname="${a.f}" value="${esc(a.uname||a.name)}" placeholder="${a.name}">
+        <input class="qi" type="number" step="${a.unit==='dona'?'1':'0.01'}" data-acc="${a.f}" value="${a.q}">
+        <span class="qx">${a.unit} ×</span>
+        <input class="pi" type="number" inputmode="numeric" data-accp="${a.f}" value="${a.p||''}" placeholder="narx">
+        <span class="qeq">=</span><span class="qsum" data-accsum="${a.f}">0</span>
+      </div>`).join('');
     html += `
-      <div class="pblock" data-p="${p.key}">
-        <div class="ptop"><span class="pname">${p.label}</span><span class="psum" data-sum>0</span></div>
-        <div class="qgrid">
-          <div><label>Mato (m)</label><input type="number" step="0.01" data-q="mato" value="${t.mato}"></div>
-          <div><label>Lenta (m)</label><input type="number" step="0.01" data-q="karset" value="${t.karset}"></div>
-          ${turba?`<div><label>Kalso (dona)</label><input type="number" step="1" data-q="kalso" value="${t.kalso}"></div>`:``}
+      <div class="pblock" data-p="${key}">
+        <div class="ptop">
+          <span class="pname">${p.label}</span>
+          <input class="mnamei" data-mname placeholder="mato nomi" value="${esc(r.cfg[key].name)}">
+          <select class="ksel" data-kturi>
+            ${Object.keys(TURI).map(k=>`<option value="${k}" ${k===r.cfg[key].kturi?'selected':''}>${TURI[k]}</option>`).join('')}
+          </select>
+          ${ktogSel}
+          ${coefSel}
+          <span class="psum" data-sum>0</span>
         </div>
+        ${matoLine}${accLinesHtml}
       </div>`;
   });
-  html += `<div class="rtot"><span>Xona jami</span><span class="v" data-rtot>0 so'm</span></div>`;
   box.innerHTML = html;
 
   box.querySelectorAll('[data-p]').forEach(pb=>{
     const key=pb.dataset.p;
-    pb.querySelectorAll('[data-q]').forEach(inp=>{
-      inp.addEventListener('input', ()=>{
-        r.q[key][inp.dataset.q] = num(inp.value);
-        recompute();
-      });
-    });
+    pb.querySelector('[data-q="mato"]').addEventListener('input', e=>{ r.q[key].mato.q=num(e.target.value); recompute(); });
+    pb.querySelector('[data-pr="mato"]').addEventListener('input', e=>{ r.q[key].mato.p=num(e.target.value); setDef(key,'mato',num(e.target.value)); recompute(); });
+    pb.querySelectorAll('[data-acc]').forEach(inp=> inp.addEventListener('input', ()=>{
+      const a=r.q[key].acc.find(x=>x.f===inp.dataset.acc); if(a){ a.q=num(inp.value); recompute(); }
+    }));
+    pb.querySelectorAll('[data-accp]').forEach(inp=> inp.addEventListener('input', ()=>{
+      const f=inp.dataset.accp; const a=r.q[key].acc.find(x=>x.f===f); if(a){ a.p=num(inp.value); setDef(key,f,num(inp.value)); recompute(); }
+    }));
+    pb.querySelectorAll('[data-accname]').forEach(inp=> inp.addEventListener('input', ()=>{
+      const a=r.q[key].acc.find(x=>x.f===inp.dataset.accname); if(a){ a.uname=inp.value; recompute(); }
+    }));
+    pb.querySelector('[data-mname]').addEventListener('input', e=>{ r.cfg[key].name=e.target.value; recompute(); });
+    const ks=pb.querySelector('[data-kturi]');
+    ks.addEventListener('change', ()=>{ r.cfg[key].kturi=ks.value; if(key==='tul') r.cfg.tul.coef=COEF_DEFAULT[ks.value]; refresh(el,r); });
+    const kt=pb.querySelector('[data-ktog]');
+    if(kt) kt.addEventListener('change', ()=>{ r.cfg[key].kalsoTuri=kt.value; refresh(el,r); });
+    const cs=pb.querySelector('[data-coefp]');
+    if(cs) cs.addEventListener('change', ()=>{ r.cfg.tul.coef=parseFloat(cs.value); refresh(el,r); });
   });
+}
+
+/* Karniz + Tikish (galochka) + Aksessuarlar */
+function buildExtras(el,r){
+  const box = el.querySelector('[data-extras]');
+  const anyMato = PARDA.some(p=>r.sel[p.key]) && num(r.eni)>0;
+  let html='';
+  if(anyMato){
+    html += `<div class="pblock">
+      <div class="qline" style="margin-bottom:7px">
+        <label class="tikchk"><input type="checkbox" data-karnizon ${r.karnizOn?'checked':''}> Karniz</label>
+        ${r.karnizOn?`
+        <input class="accnamei" data-karniznom value="${esc(r.karnizNom)}" placeholder="Turba/Rels/Baget">
+        <span class="qi" data-karnizq style="border:none;background:transparent;text-align:center">0</span>
+        <span class="qx">m ×</span>
+        <input class="pi" type="number" inputmode="numeric" data-karnizp value="${r.karnizP||''}" placeholder="narx">
+        <span class="qeq">=</span><span class="qsum" data-karnizsum>0</span>`
+        :`<span class="qx" style="flex:1">qo'shilmagan</span>`}
+      </div>
+      <div class="qline" style="margin:0">
+        <label class="tikchk"><input type="checkbox" data-tikon ${r.tikOn?'checked':''}> Tikish</label>
+        ${r.tikOn?`
+        <span class="qi" data-tikq style="border:none;background:transparent;text-align:center">0</span>
+        <span class="qx">m ×</span>
+        <input class="pi" type="number" inputmode="numeric" data-tikp value="${r.tikP||''}" placeholder="narx">
+        <span class="qeq">=</span><span class="qsum" data-tiksum>0</span>`
+        :`<span class="qx" style="flex:1">qo'shilmagan</span>`}
+      </div></div>`;
+  }
+  html += `<div class="pblock">
+      <div class="ptop"><span class="pname">Aksessuarlar</span>
+        <button class="addacc" data-addacc>+ qo'shish</button></div>
+      <div data-exrows>${r.extra.map((x,i)=>exRow(x,i)).join('')}</div>
+    </div>`;
+  box.innerHTML = html;
+
+  const kOn=box.querySelector('[data-karnizon]');
+  if(kOn) kOn.addEventListener('change', ()=>{ r.karnizOn=kOn.checked; buildExtras(el,r); recompute(); });
+  const kNom=box.querySelector('[data-karniznom]');
+  if(kNom) kNom.addEventListener('input', ()=>{ r.karnizNom=kNom.value; recompute(); });
+  const kP=box.querySelector('[data-karnizp]');
+  if(kP) kP.addEventListener('input', ()=>{ r.karnizP=num(kP.value); recompute(); });
+
+  const tk=box.querySelector('[data-tikon]');
+  if(tk) tk.addEventListener('change', ()=>{ r.tikOn=tk.checked; buildExtras(el,r); recompute(); });
+  const tp=box.querySelector('[data-tikp]');
+  if(tp) tp.addEventListener('input', ()=>{ r.tikP=num(tp.value); recompute(); });
+
+  box.querySelector('[data-addacc]').addEventListener('click', ()=>{ r.extra.push({name:'',q:'',p:''}); buildExtras(el,r); recompute(); });
+  box.querySelectorAll('[data-ex]').forEach(row=>{
+    const i=+row.dataset.ex;
+    row.querySelector('[data-exn]').addEventListener('input', e=>{ r.extra[i].name=e.target.value; recompute(); });
+    row.querySelector('[data-exq]').addEventListener('input', e=>{ r.extra[i].q=e.target.value; recompute(); });
+    row.querySelector('[data-exp]').addEventListener('input', e=>{ r.extra[i].p=e.target.value; recompute(); });
+    row.querySelector('[data-exdel]').addEventListener('click', ()=>{ r.extra.splice(i,1); buildExtras(el,r); recompute(); });
+  });
+}
+function exRow(x,i){
+  return `<div class="qline" data-ex="${i}">
+    <input class="exn" data-exn placeholder="Mahsulot nomi" value="${esc(x.name)}">
+    <input class="qi" type="number" data-exq value="${x.q}" placeholder="0">
+    <span class="qx">×</span>
+    <input class="pi" type="number" inputmode="numeric" data-exp value="${x.p}" placeholder="narx">
+    <span class="qeq">=</span><span class="qsum" data-exsum>0</span>
+    <button class="exdel" data-exdel>✕</button>
+  </div>`;
 }
 
 /* ================= HISOB ================= */
 function recompute(){
   let grand=0;
-  const tot={zashitniy:0, tul:0, parter:0, karset:0, kalso:0};
-
   rooms.forEach(r=>{
-    let rtot=0;
+    const cardEl=findCard(r.id); if(!cardEl) return;
+    let matoSum=0;
     Object.keys(r.q).forEach(key=>{
-      const q=r.q[key];
-      const summa = q.mato*narx[key] + q.karset*narx.karsaj + (q.kalso||0)*narx.kalso;
-      rtot += summa; grand += summa;
-      tot[key]+=q.mato; tot.karset+=q.karset; tot.kalso+=(q.kalso||0);
-      const card = [...roomsEl.children].find(c=>c.__id===r.id) || findCard(r.id);
-      const pb = card && card.querySelector(`[data-p="${key}"] [data-sum]`);
-      if(pb) pb.textContent = fmtSom(summa)+" so'm";
+      const it=r.q[key];
+      let psum=0;
+      const mls=(it.mato.q||0)*(it.mato.p||0); psum+=mls; matoSum+=(it.mato.q||0);
+      const mEl=cardEl.querySelector(`[data-p="${key}"] [data-ls="mato"]`); if(mEl) mEl.textContent=fmtSom(mls);
+      it.acc.forEach(a=>{ const ls=(a.q||0)*(a.p||0); psum+=ls;
+        const el=cardEl.querySelector(`[data-p="${key}"] [data-accsum="${a.f}"]`); if(el) el.textContent=fmtSom(ls); });
+      const ps=cardEl.querySelector(`[data-p="${key}"] [data-sum]`); if(ps) ps.textContent=fmtSom(psum)+" so'm";
     });
-    const card = findCard(r.id);
-    const rt = card && card.querySelector('[data-rtot]');
-    if(rt) rt.textContent = fmtSom(rtot)+" so'm";
+    const eni=num(r.eni);
+    const kEl=cardEl.querySelector('[data-karnizq]'); if(kEl) kEl.textContent=fmtM(eni);
+    const kS=cardEl.querySelector('[data-karnizsum]'); if(kS) kS.textContent=fmtSom(r.karnizOn?eni*(r.karnizP||0):0);
+    const tq=cardEl.querySelector('[data-tikq]'); if(tq) tq.textContent=fmtM(matoSum);
+    const ts=cardEl.querySelector('[data-tiksum]'); if(ts) ts.textContent=fmtSom(r.tikOn?matoSum*(r.tikP||0):0);
+    r.extra.forEach((x,i)=>{ const ls=num(x.q)*num(x.p);
+      const el=cardEl.querySelector(`[data-ex="${i}"] [data-exsum]`); if(el) el.textContent=fmtSom(ls); });
+    const rl=roomLines(r);
+    grand+=rl.total;
+    const rt=cardEl.querySelector('[data-rtot]'); if(rt) rt.textContent=fmtSom(rl.total)+" so'm";
   });
+  document.getElementById('grand').textContent=fmtSom(grand)+" so'm";
 
-  document.getElementById('grand').textContent = fmtSom(grand)+" so'm";
-  document.getElementById('totBreak').innerHTML = `
-    <div class="tline"><span>Zashitniy mato</span><span class="v">${fmtM(tot.zashitniy)} m</span></div>
-    <div class="tline"><span>Tul mato</span><span class="v">${fmtM(tot.tul)} m</span></div>
-    <div class="tline"><span>Parter mato</span><span class="v">${fmtM(tot.parter)} m</span></div>
-    <div class="tline"><span>Lenta jami</span><span class="v">${fmtM(tot.karset)} m</span></div>
-    <div class="tline"><span>Kalso jami</span><span class="v">${tot.kalso} dona</span></div>`;
+  const agg=aggAll();
+  document.getElementById('totBreak').innerHTML = agg.length
+    ? agg.map(l=>{
+        const u = l.unit==='dona' ? ' dona' : (l.unit==='m'?' m':'');
+        const nx = l.narx!=null ? ` × ${fmtSom(l.narx)}` : '';
+        return `<div class="tline"><span>${esc(l.name)} — ${fmtQ(l.qty,l.unit)}${u}${nx}</span><span class="v">${fmtSom(l.summa)}</span></div>`;
+      }).join('')
+    : `<div class="tline"><span>Ma'lumot kiritilmagan</span><span class="v">—</span></div>`;
 }
 
-function findCard(id){
-  return [...roomsEl.children][ rooms.findIndex(r=>r.id===id) ];
-}
-
-/* ================= HISOBOT ================= */
+/* ================= MATNLI HISOBOT ================= */
 function buildReport(){
-  let s="🪟 PARDA HISOB-KITOB\n\n";
-  rooms.forEach((r,i)=>{
-    if(!Object.keys(r.q).length) return;
-    s+=`${i+1}) ${r.nom||'Xona'} — ${fmtM(num(r.eni))}×${fmtM(num(r.boyi))} m, ${r.qator}-qator ${TURI[r.turi]}\n`;
-    let rtot=0;
-    Object.keys(r.q).forEach(key=>{
-      const q=r.q[key];
-      const summa=q.mato*narx[key]+q.karset*narx.karsaj+(q.kalso||0)*narx.kalso;
-      rtot+=summa;
-      const kal = r.turi==='turba' ? `, kalso ${q.kalso} dona` : '';
-      s+=`   • ${PARDA.find(p=>p.key===key).label}: mato ${fmtM(q.mato)}m, lenta ${fmtM(q.karset)}m${kal} = ${fmtSom(summa)} so'm\n`;
+  let s="🧾 RAYYON PARDALAR\nSifatli pardalar va to'qimachilik\n";
+  if(mijoz.nom||mijoz.tel||mijoz.manzil||mijoz.izoh){
+    s+="━━━━━━━━━━━━━━\n";
+    if(mijoz.nom) s+=`Mijoz: ${mijoz.nom}\n`;
+    if(mijoz.tel) s+=`Tel: ${mijoz.tel}\n`;
+    if(mijoz.manzil) s+=`Manzil: ${mijoz.manzil}\n`;
+    if(mijoz.izoh) s+=`Izoh: ${mijoz.izoh}\n`;
+  }
+  s+="━━━━━━━━━━━━━━\n\n";
+  let grand=0;
+  const vr=validRooms();
+  vr.forEach((r,i)=>{
+    const rl=roomLines(r);
+    s+=`🏠 ${r.nom||'Xona '+(i+1)} (${fmtM(num(r.eni))}×${fmtM(num(r.boyi))} m)\n`;
+    rl.lines.forEach(l=>{
+      const u=l.unit==='dona'?' dona':(l.unit==='m'?'m':'');
+      s+=`   ${l.name}: ${fmtQ(l.qty,l.unit)}${u}${l.narx!=null?' × '+fmtSom(l.narx):''} = ${fmtSom(l.summa)}\n`;
     });
-    s+=`   Xona jami: ${fmtSom(rtot)} so'm\n\n`;
+    grand+=rl.total;
+    s+=`   ─ Jami: ${fmtSom(rl.total)} so'm\n\n`;
   });
-  s+="━━━━━━━━━━━━━━\n"+document.getElementById('grand').textContent+" — UMUMIY JAMI";
+  if(vr.length>1){
+    s+="📦 JAMI MAHSULOTLAR:\n";
+    aggAll().forEach(l=>{
+      const u=l.unit==='dona'?' dona':(l.unit==='m'?'m':'');
+      s+=`   ${l.name}: ${fmtQ(l.qty,l.unit)}${u} = ${fmtSom(l.summa)}\n`;
+    });
+    s+="\n";
+  }
+  s+="━━━━━━━━━━━━━━\n";
+  s+=`UMUMIY SUMMA: ${fmtSom(grand)} so'm\n\nXaridingiz uchun tashakkur!\nTel: +998 90 940 11 41`;
   return s;
 }
 
+/* ================= CHEK (rasm) ================= */
+function nextChekNo(){ let n=1; try{ n=(parseInt(localStorage.getItem('chekNo'))||0)+1; localStorage.setItem('chekNo',n); }catch(e){} return n; }
+function renderChek(){
+  const vr=validRooms();
+  let grand=0;
+  const sana=new Date().toLocaleDateString('ru-RU');
+  const no=String(nextChekNo()).padStart(4,'0');
+  const m=mijoz;
+  const meta=`<div class="chk-meta">
+    ${m.nom?`<div>Mijoz: <b>${esc(m.nom)}</b></div>`:''}
+    <div>Chek <b>№ ${no}</b></div>
+    <div>Sana: <b>${sana}</b></div>
+    ${m.tel?`<div>Tel: <b>${esc(m.tel)}</b></div>`:''}
+    ${m.manzil?`<div style="flex-basis:100%">Manzil: <b>${esc(m.manzil)}</b></div>`:''}
+  </div>`;
+  const roomsHtml=vr.map((r,i)=>{
+    const rl=roomLines(r); grand+=rl.total;
+    const foto=r.foto?`<img src="${r.foto}">`:'';
+    return `
+    <div class="chk-room">
+      <div class="chk-rh"><span class="rn">${foto}${esc(r.nom||'Xona '+(i+1))}</span><span class="rt">${fmtSom(rl.total)}</span></div>
+      <table>
+        <tr><th class="l">Mahsulot</th><th style="width:48px">Miqdor</th><th style="width:56px">Narx</th><th style="width:66px">Summa</th></tr>
+        ${rl.lines.map(l=>`<tr><td class="l">${esc(l.name)}</td><td>${fmtQ(l.qty,l.unit)}</td><td>${l.narx!=null?fmtSom(l.narx):'—'}</td><td class="s">${fmtSom(l.summa)}</td></tr>`).join('')}
+      </table>
+    </div>`;
+  }).join('');
+  const aggHtml = vr.length>1 ? `
+    <div class="chk-room chk-agg">
+      <div class="chk-rh"><span class="rn">📦 Jami mahsulotlar</span><span class="rt"></span></div>
+      <table>
+        <tr><th class="l">Mahsulot</th><th style="width:48px">Miqdor</th><th style="width:56px">Narx</th><th style="width:66px">Summa</th></tr>
+        ${aggAll().map(l=>`<tr><td class="l">${esc(l.name)}</td><td>${fmtQ(l.qty,l.unit)}</td><td>${l.narx!=null?fmtSom(l.narx):'—'}</td><td class="s">${fmtSom(l.summa)}</td></tr>`).join('')}
+      </table>
+    </div>` : '';
+  return `<div class="chk" id="chkCard">
+    <div class="chk-top"><div class="nm">RAYYON PARDALAR</div><div class="sub">Sifatli pardalar va to'qimachilik mahsulotlari</div></div>
+    <div class="chk-title">HISOB-KITOB CHEKI</div>
+    ${meta}${roomsHtml}${aggHtml}
+    <div class="chk-grand"><span class="gl">UMUMIY SUMMA</span><span class="gv">${fmtSom(grand)} so'm</span></div>
+    <div class="chk-foot"><div class="th">Xaridingiz uchun tashakkur!</div><div>Rayyon Pardalar Do'koni · Tel: +998 90 940 11 41</div></div>
+  </div>`;
+}
+function openChek(){
+  if(!validRooms().length){ toast("Avval xona ma'lumotlarini to'ldiring"); return; }
+  document.getElementById('chekWrap').innerHTML=renderChek();
+  document.getElementById('chekModal').style.display='flex';
+}
+function closeChek(){ document.getElementById('chekModal').style.display='none'; }
+function saveChek(){
+  const node=document.getElementById('chkCard');
+  if(!window.html2canvas || !node){ toast('Rasm kutubxonasi yuklanmadi'); return; }
+  html2canvas(node,{backgroundColor:'#ffffff', scale:2, useCORS:true}).then(canvas=>{
+    canvas.toBlob(blob=>{
+      if(!blob){ toast('Xatolik'); return; }
+      const file=new File([blob],'rayyon-chek.png',{type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:'Chek'}).catch(()=>{});
+      } else {
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a'); a.href=url; a.download='rayyon-chek.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),1000);
+        toast('Rasm saqlandi ✓');
+      }
+    },'image/png');
+  }).catch(()=>toast('Xatolik — qayta urining'));
+}
+document.getElementById('chekBtn').addEventListener('click', openChek);
+document.getElementById('chekClose').addEventListener('click', closeChek);
+document.getElementById('chekSave').addEventListener('click', saveChek);
+document.getElementById('chekModal').addEventListener('click', e=>{ if(e.target.id==='chekModal') closeChek(); });
+
 /* ================= EVENTLAR ================= */
-document.querySelectorAll('[data-narx]').forEach(inp=>{
-  inp.addEventListener('input', ()=>{ narx[inp.dataset.narx]=num(inp.value); recompute(); });
+document.querySelectorAll('[data-m]').forEach(inp=>{
+  inp.addEventListener('input', ()=>{ mijoz[inp.dataset.m]=inp.value; });
 });
 document.getElementById('addBtn').addEventListener('click', ()=> addRoom(true));
 document.getElementById('copyBtn').addEventListener('click', ()=>{
