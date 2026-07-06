@@ -11,3 +11,4 @@ __pycache__/
 *.pyc
 bot_log.txt
 bot_err.txt
+cloudflared.exe

@@ -118,6 +118,30 @@
     padding:5px 14px;border-radius:20px;margin-top:8px;}
   .soon{display:inline-block;margin-top:14px;background:#fff3e0;color:#b26a00;font-weight:700;font-size:12px;padding:6px 14px;border-radius:10px;}
 
+  /* ===== CRM (Buyurtmalar) ===== */
+  .ocard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    padding:12px 14px;margin-bottom:10px;cursor:pointer;}
+  .orow1{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;}
+  .ost{background:var(--brand-soft);color:var(--brand);font-size:11px;font-weight:700;padding:4px 9px;border-radius:9px;white-space:nowrap;}
+  .orow2{font-size:12px;color:var(--muted);margin-top:5px;}
+  .orow3{font-size:11px;color:var(--muted);margin-top:3px;}
+  .back{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1.5px solid var(--line);
+    color:var(--text);border-radius:12px;padding:9px 14px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px;}
+  .stgrid{display:flex;flex-wrap:wrap;gap:6px;}
+  .stchip{border:1.5px solid var(--line);border-radius:10px;padding:7px 9px;font-size:12px;font-weight:600;
+    color:var(--muted);background:var(--card);}
+  .stchip.clk{cursor:pointer;}
+  .stchip.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);}
+  .hline{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .otext{white-space:pre-wrap;font-size:12px;background:var(--bg);border-radius:10px;padding:10px;margin:6px 0 0;font-family:inherit;}
+  .cmt{background:var(--bg);border-radius:11px;padding:8px 11px;margin-bottom:7px;font-size:13px;}
+  .cmt.mine{background:var(--brand-soft);}
+  .cmt b{font-size:12px;} .cmt span{font-size:10.5px;color:var(--muted);margin-left:6px;}
+  .cmtbox{display:flex;gap:8px;margin-top:10px;}
+  .tsk{background:var(--bg);border-radius:11px;padding:8px 11px;margin-bottom:7px;font-size:13px;}
+  .repline{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line);}
+  .repline:last-child{border-bottom:none;}
+
   /* ===== Chek modal ===== */
   .modal{position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:200;display:flex;
     align-items:flex-start;justify-content:center;overflow:auto;padding:18px 12px;}
@@ -197,12 +221,13 @@
   </div>
 
   <div class="page" id="page-buyurtma">
-    <div class="ph-card">
-      <div class="pic">📋</div>
-      <h2>Buyurtmalar</h2>
-      <p>Buyurtmalar CRM: holat (yangi → jarayonда → tayyor), tasklar va kechikishда bosh adminга xabar. Admin buyurtma yaratsa shu yerда ko'rinadi; mijoz o'z buyurtmasini kuzatadi.</p>
-      <div class="soon">⏳ Backend ulanganда ishga tushadi</div>
+    <div id="crm-offline" class="ph-card" style="display:none">
+      <div class="pic">📡</div>
+      <h2>Server ulanmagan</h2>
+      <p>Buyurtmalar bo'limi ishlashi uchun ilovani <b>botdagi tugma</b> orqali oching (bot kompyuterda ishlab turishi kerak).</p>
     </div>
+    <div id="crm-list"></div>
+    <div id="crm-detail" style="display:none"></div>
   </div>
 
   <div class="page" id="page-profil">
@@ -212,6 +237,7 @@
       <div class="rolebadge" id="prof-role">—</div>
       <p style="margin-top:14px" id="prof-note"></p>
     </div>
+    <div id="prof-reports"></div>
   </div>
 </div><!-- wrap -->
 
@@ -815,6 +841,8 @@ function showTab(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+name));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===name));
   window.scrollTo(0,0);
+  if(name==='buyurtma') crmLoad();
+  if(name==='profil') loadReports();
 }
 document.querySelectorAll('.tab').forEach(t=> t.addEventListener('click', ()=> showTab(t.dataset.tab)));
 (function initRole(){
@@ -828,6 +856,140 @@ document.querySelectorAll('.tab').forEach(t=> t.addEventListener('click', ()=> s
   if(!admin){ hisobTab.hidden=true; showTab('mahsulot'); }   // mijoz: hisob-kitob yashirin
   else showTab('hisob');
 })();
+
+/* ===== CRM: API bilan ishlash ===== */
+const qsApi = new URLSearchParams(location.search).get('api');
+if(qsApi){ try{ localStorage.setItem('apiBase', qsApi); }catch(e){} }
+const API = qsApi || (function(){ try{ return localStorage.getItem('apiBase')||''; }catch(e){ return ''; } })();
+
+const STG = ["buyurtma_olindi","olchov","zaklad","kesildi","tikilmoqda","tayyor","yakunlandi","bekor"];
+const STGL = {
+  buyurtma_olindi:"📥 Buyurtma olindi", olchov:"📏 O'lchovga borildi",
+  zaklad:"💰 Zaklad berildi", kesildi:"✂️ Kesildi", tikilmoqda:"🧵 Tikilmoqda",
+  tayyor:"✅ Tayyor", yakunlandi:"🏁 Yakunlandi", bekor:"❌ Bekor"};
+
+async function api(path, opts={}){
+  const r = await fetch(API+path, {...opts,
+    headers:{'Content-Type':'application/json','X-Init-Data': tg?tg.initData:'', ...(opts.headers||{})}});
+  if(!r.ok) throw new Error('api '+r.status);
+  return r.json();
+}
+
+let crmUsers=null;
+
+async function crmLoad(){
+  const off=document.getElementById('crm-offline'),
+        list=document.getElementById('crm-list'),
+        det=document.getElementById('crm-detail');
+  det.style.display='none'; list.style.display='block';
+  if(!API){ off.style.display='block'; list.innerHTML=''; return; }
+  off.style.display='none';
+  list.innerHTML='<div class="ph-card"><p>Yuklanmoqda…</p></div>';
+  try{
+    const d = await api('/api/orders');
+    if(!d.orders.length){
+      list.innerHTML='<div class="ph-card"><div class="pic">📋</div><h2>Buyurtma yo\'q</h2><p>Hisob-kitob qilib «Botga yuborish»ni bossangiz, buyurtma shu yerda paydo bo\'ladi.</p></div>';
+      return;
+    }
+    list.innerHTML = d.orders.map(o=>`
+      <div class="ocard" data-oid="${o.id}">
+        <div class="orow1"><b>№${o.id} · ${esc(o.full_name)}</b><span class="ost">${STGL[o.status]||o.status}</span></div>
+        <div class="orow2">${esc((o.snippet||'').replace(/\n/g,' ').slice(0,70))}…</div>
+        <div class="orow3">${(o.created_at||'').replace('T',' ').slice(0,16)}</div>
+      </div>`).join('');
+    list.querySelectorAll('.ocard').forEach(c=> c.addEventListener('click', ()=> crmDetail(+c.dataset.oid)));
+  }catch(e){ off.style.display='block'; list.innerHTML=''; }
+}
+
+async function crmDetail(oid){
+  const list=document.getElementById('crm-list'), det=document.getElementById('crm-detail');
+  list.style.display='none'; det.style.display='block';
+  det.innerHTML='<div class="ph-card"><p>Yuklanmoqda…</p></div>';
+  let d;
+  try{ d=await api('/api/orders/'+oid); }
+  catch(e){ det.innerHTML='<div class="ph-card"><p>Yuklashda xatolik</p></div>'; return; }
+  const o=d.order;
+  const stages = STG.map(s=>`<div class="stchip ${s===o.status?'on':''} ${d.admin?'clk':''}" data-st="${s}">${STGL[s]}</div>`).join('');
+  const hist = d.history.map(h=>`<div class="hline">${STGL[h.status]||h.status} — ${esc(h.by)} · ${(h.at||'').replace('T',' ').slice(5,16)}</div>`).join('');
+  const cmts = d.comments.map(c=>`<div class="cmt ${c.mine?'mine':''}"><b>${esc(c.name)}</b><span>${(c.at||'').replace('T',' ').slice(5,16)}</span><div>${esc(c.text)}</div></div>`).join('')
+    || '<div class="hint" style="margin:6px 0">Hozircha izoh yo\'q — birinchi bo\'lib yozing.</div>';
+  const tsks = d.tasks.map(t=>{
+    const em=t.status==='bajarildi'?'✅':(t.status==='kechikdi'?'⚠️':'🕒');
+    return `<div class="tsk">${em} <b>${esc(t.assignee)}</b>: ${esc(t.text)}
+      <div class="hline">muddat ${(t.deadline||'').replace('T',' ').slice(5,16)}${t.result?' · natija: '+esc(t.result):''}</div></div>`;
+  }).join('');
+  det.innerHTML = `
+    <button class="back" id="crmBack">‹ Buyurtmalar</button>
+    <div class="card">
+      <div class="orow1"><b>№${o.id} · ${esc(o.full_name)}</b><span class="ost">${STGL[o.status]||o.status}</span></div>
+      <details style="margin:8px 0"><summary style="font-size:13px;color:var(--muted);cursor:pointer">Buyurtma matni</summary><pre class="otext">${esc(o.text||'')}</pre></details>
+      <div class="nhead" style="margin-top:10px">Bosqich${d.admin?" (bosib o'zgartiring)":''}</div>
+      <div class="stgrid">${stages}</div>
+      ${hist?`<div class="nhead" style="margin-top:12px">Tarix</div>${hist}`:''}
+    </div>
+    <div class="card">
+      <div class="nhead">💬 Suhbat / izohlar</div>
+      <div id="cmts">${cmts}</div>
+      <div class="cmtbox"><input id="cmtIn" placeholder="Izoh yozing…">
+        <button class="btn btn-primary" id="cmtSend" style="flex:0 0 auto;padding:10px 16px">➤</button></div>
+    </div>
+    ${d.admin?`<div class="card">
+      <div class="nhead">📌 Tasklar</div>
+      ${tsks||'<div class="hint">Task yo\'q</div>'}
+      <div class="row2 field" style="margin-top:10px">
+        <div><label>Xodim</label><select id="tskUser"><option>yuklanmoqda…</option></select></div>
+        <div style="max-width:90px"><label>Soat</label><input id="tskH" type="number" value="24"></div>
+      </div>
+      <div class="cmtbox"><input id="tskT" placeholder="Task matni…">
+        <button class="btn btn-primary" id="tskAdd" style="flex:0 0 auto;padding:10px 14px">＋</button></div>
+    </div>`:(tsks?`<div class="card"><div class="nhead">📌 Tasklar</div>${tsks}</div>`:'')}
+  `;
+  document.getElementById('crmBack').addEventListener('click', crmLoad);
+  document.getElementById('cmtSend').addEventListener('click', async ()=>{
+    const t=document.getElementById('cmtIn').value.trim(); if(!t) return;
+    try{ await api('/api/orders/'+oid+'/comment',{method:'POST',body:JSON.stringify({text:t})}); crmDetail(oid); }
+    catch(e){ toast('Xatolik'); }
+  });
+  if(d.admin){
+    det.querySelectorAll('.stchip').forEach(ch=> ch.addEventListener('click', async ()=>{
+      try{ await api('/api/orders/'+oid+'/status',{method:'POST',body:JSON.stringify({status:ch.dataset.st})}); crmDetail(oid); }
+      catch(e){ toast('Xatolik'); }
+    }));
+    (async()=>{
+      try{
+        if(!crmUsers) crmUsers=(await api('/api/users')).users;
+        document.getElementById('tskUser').innerHTML=crmUsers.map(u=>`<option value="${u.id}">${esc(u.full_name)}</option>`).join('');
+      }catch(e){}
+    })();
+    document.getElementById('tskAdd').addEventListener('click', async ()=>{
+      const t=document.getElementById('tskT').value.trim(); if(!t){ toast('Task matni?'); return; }
+      try{
+        await api('/api/orders/'+oid+'/task',{method:'POST',body:JSON.stringify({
+          assignee_id:document.getElementById('tskUser').value,
+          hours:parseFloat(document.getElementById('tskH').value)||24, text:t})});
+        toast("Task qo'yildi ✓"); crmDetail(oid);
+      }catch(e){ toast('Xatolik'); }
+    });
+  }
+}
+
+async function loadReports(){
+  const box=document.getElementById('prof-reports'); if(!box) return;
+  if(!API || !isAdmin()){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="hint" style="margin-top:14px;text-align:center">Hisobot yuklanmoqda…</div>';
+  try{
+    const d=await api('/api/reports');
+    const st=Object.entries(d.orders.by_status).filter(([k,v])=>v>0)
+      .map(([k,v])=>`<div class="repline"><span>${STGL[k]||k}</span><b>${v}</b></div>`).join('');
+    const wk=d.workers.map(w=>`<div class="repline"><span>${esc(w.name)}</span><b>✅${w.bajarildi} 🕒${w.ochiq} ⚠️${w.kechikdi}</b></div>`).join('')
+      || '<div class="hint">Task berilmagan</div>';
+    const mb=d.members.latest.map(m=>`<div class="repline"><span>${esc(m.name)}${m.username?' @'+m.username:''}</span><b>${m.at}</b></div>`).join('');
+    box.innerHTML=`
+      <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">📋 Buyurtmalar (jami ${d.orders.total})</div>${st||'<div class="hint">Yo\'q</div>'}</div>
+      <div class="card" style="text-align:left"><div class="nhead">👷 Ishchilar (tasklar)</div>${wk}</div>
+      <div class="card" style="text-align:left"><div class="nhead">👥 A'zolar (jami ${d.members.total})</div>${mb}</div>`;
+  }catch(e){ box.innerHTML='<div class="hint" style="margin-top:14px;text-align:center">Hisobot yuklanmadi</div>'; }
+}
 </script>
 </body>
 </html>
