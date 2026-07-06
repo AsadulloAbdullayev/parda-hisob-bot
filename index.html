@@ -142,6 +142,61 @@
   .repline{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line);}
   .repline:last-child{border-bottom:none;}
 
+  /* ===== Buyurtma boshqaruv oynasi ===== */
+  .owin{position:fixed;inset:0;background:var(--bg);z-index:300;overflow:auto;padding-bottom:50px;}
+  .ow-head{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);
+    padding:10px 12px;display:flex;align-items:center;gap:8px;z-index:12;flex-wrap:wrap;}
+  .ow-back{border:none;background:transparent;font-size:20px;cursor:pointer;color:var(--text);padding:2px 6px;}
+  .ow-num{font-weight:800;font-size:16px;white-space:nowrap;}
+  .ow-org{width:auto;padding:6px 8px;font-size:12px;border-radius:9px;}
+  .ow-sp{flex:1;}
+  .ow-btn{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:7px 11px;
+    font-size:12.5px;font-weight:700;cursor:pointer;color:var(--text);position:relative;}
+  .ow-menu{position:absolute;right:12px;top:52px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;box-shadow:0 8px 24px rgba(20,40,90,.15);min-width:180px;z-index:30;}
+  .ow-menu div{padding:11px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--line);}
+  .ow-menu div:last-child{border-bottom:none;}
+  .ow-pipe{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--card);
+    border-bottom:1px solid var(--line);}
+  .ow-st{flex:0 0 auto;border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;
+    font-size:12px;font-weight:700;color:var(--muted);background:var(--card);white-space:nowrap;}
+  .ow-st.clk{cursor:pointer;}
+  .ow-st.on{border-color:var(--brand);background:var(--brand);color:#fff;}
+  .ow-st.done{border-color:var(--brand);color:var(--brand);background:var(--brand-soft);}
+  .ow-tabs{display:flex;gap:2px;padding:6px 10px 0;background:var(--card);border-bottom:1px solid var(--line);
+    overflow-x:auto;}
+  .ow-tab{flex:0 0 auto;padding:9px 12px;font-size:13px;font-weight:700;color:var(--muted);
+    border:none;background:transparent;border-bottom:2.5px solid transparent;cursor:pointer;}
+  .ow-tab.on{color:var(--brand);border-bottom-color:var(--brand);}
+  .ow-body{padding:12px;max-width:820px;margin:0 auto;}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .fgrid .full{grid-column:1/-1;}
+  .feed-i{display:flex;gap:9px;font-size:12.5px;margin-bottom:9px;align-items:flex-start;}
+  .feed-i .fic{width:28px;height:28px;border-radius:9px;background:var(--brand-soft);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .feed-i .fw{color:var(--muted);font-size:11px;}
+  .itbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);}
+  .itbl{border-collapse:collapse;min-width:820px;font-size:12.5px;width:100%;}
+  .itbl th{font-size:10px;color:var(--muted);text-transform:uppercase;padding:8px 6px;
+    border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;background:var(--bg);}
+  .itbl td{padding:4px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  .itbl input,.itbl select{padding:6px;font-size:12.5px;border-radius:8px;min-width:56px;}
+  .itbl .tsum{font-weight:700;padding:4px 8px;}
+  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .statbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px;}
+  .statbox .n{font-size:19px;font-weight:800;}
+  .statbox .l{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .cfrow{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;padding:8px 10px;margin-bottom:8px;}
+  .cfrow .drag{cursor:grab;color:var(--muted);font-size:15px;}
+  .cfrow.dragging{opacity:.4;}
+  .seamrow{background:var(--bg);border-radius:11px;padding:9px 11px;margin-bottom:8px;font-size:13px;}
+  .prd-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    padding:10px;display:flex;gap:10px;align-items:center;margin-bottom:9px;}
+  .prd-card img{width:52px;height:52px;border-radius:10px;object-fit:cover;background:var(--bg);flex:0 0 auto;}
+  .prd-cat{display:inline-block;background:var(--brand-soft);color:var(--brand);font-size:10.5px;
+    font-weight:700;padding:2px 8px;border-radius:7px;}
+
   /* ===== Chek modal ===== */
   .modal{position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:200;display:flex;
     align-items:flex-start;justify-content:center;overflow:auto;padding:18px 12px;}
@@ -248,6 +303,8 @@
   <button class="tab" data-tab="buyurtma"><span class="ti">📋</span>Buyurtmalar</button>
   <button class="tab" data-tab="profil"><span class="ti">👤</span>Profil</button>
 </nav>
+
+<div class="owin" id="ordWin" style="display:none"></div>
 
 <div class="modal" id="chekModal" style="display:none">
   <div class="modal-inner">
@@ -1236,6 +1293,450 @@ async function productsLoad(){
         </div>
       </div>`).join('')}`).join('');
   }catch(e){ list.innerHTML='<div class="ph-card"><p>Yuklashda xatolik</p></div>'; }
+}
+
+/* ================================================================
+   BUYURTMA BOSHQARUV OYNASI — to'liq ekran (crmDetail o'rnini bosadi)
+   ================================================================ */
+const SEAM_ST={biriktirildi:'📎 Biriktirildi',jarayonda:'🔄 Jarayonda',tikildi:'🧵 Tikildi',topshirildi:'✅ Topshirildi'};
+let owD=null, owTab='umumiy', owPrd=null, owUsers=null;
+
+function crmDetail(oid){ ordOpen(oid,'umumiy'); }   /* eski oynani almashtiradi */
+
+async function ordOpen(oid, tab){
+  owTab=tab||owTab||'umumiy';
+  const W=document.getElementById('ordWin');
+  W.style.display='block'; document.body.style.overflow='hidden';
+  if(!owD || owD.order.id!==oid) W.innerHTML='<div class="ph-card" style="margin:60px 14px"><p>Yuklanmoqda…</p></div>';
+  try{
+    owD=await api('/api/orders/'+oid);
+    if(owD.can_manage){
+      if(!owUsers) owUsers=(await api('/api/users')).users;
+      if(!owPrd) owPrd=(await api('/api/products')).products;
+    }
+  }catch(e){ W.innerHTML='<div class="ph-card" style="margin:60px 14px"><p>Yuklashda xatolik</p><button class="back" onclick="ordClose()">‹ Orqaga</button></div>'; return; }
+  ordRender();
+}
+function ordClose(){
+  document.getElementById('ordWin').style.display='none';
+  document.body.style.overflow=''; owD=null;
+  crmLoad();
+}
+function ordSeamSum(){ return (owD.seams||[]).reduce((s,x)=>s+(+x.fee||0),0); }
+
+function ordRender(){
+  const W=document.getElementById('ordWin'), d=owD, o=d.order, cm=d.can_manage;
+  const curIdx=STG.indexOf(o.status);
+  const pipe=STG.map((s,i)=>`<div class="ow-st ${s===o.status?'on':(i<curIdx?'done':'')} ${cm?'clk':''}" data-st="${s}">${STGL[s]}</div>`).join('');
+  const tabs=[['umumiy','Umumiy'],['mahsulot','Mahsulotlar'],['stat','Statistika'],['soz','Sozlamalar']]
+    .map(([k,l])=>`<button class="ow-tab ${owTab===k?'on':''}" data-owtab="${k}">${l}</button>`).join('');
+  W.innerHTML=`
+    <div class="ow-head">
+      <button class="ow-back" id="owBack">‹</button>
+      <span class="ow-num">Buyurtma #${o.id}</span>
+      <select class="ow-org"><option>Rayyon Pardalar</option></select>
+      <span class="ow-sp"></span>
+      <button class="ow-btn" id="owDoc">📄 Dokumentlar</button>
+      <button class="ow-btn" id="owAct">⚡ Amallar</button>
+    </div>
+    <div class="ow-pipe">${pipe}</div>
+    <div class="ow-tabs">${tabs}</div>
+    <div class="ow-body" id="owBody"></div>`;
+  document.getElementById('owBack').addEventListener('click', ordClose);
+  W.querySelectorAll('[data-owtab]').forEach(b=> b.addEventListener('click', ()=>{ owTab=b.dataset.owtab; ordRender(); }));
+  if(cm) W.querySelectorAll('.ow-st').forEach(ch=> ch.addEventListener('click', async ()=>{
+    try{ await api('/api/orders/'+o.id+'/status',{method:'POST',body:JSON.stringify({status:ch.dataset.st})}); ordOpen(o.id,owTab); }
+    catch(e){ toast('Xatolik'); }
+  }));
+  const menu=(items)=>{
+    document.querySelectorAll('.ow-menu').forEach(m=>m.remove());
+    const m=document.createElement('div'); m.className='ow-menu';
+    m.innerHTML=items.map(([ic,t],i)=>`<div data-mi="${i}">${ic} ${t}</div>`).join('');
+    W.querySelector('.ow-head').appendChild(m);
+    m.querySelectorAll('[data-mi]').forEach((el,i)=> el.addEventListener('click', ()=>{ m.remove(); items[i][2](); }));
+    setTimeout(()=> document.addEventListener('click', function h(e){ if(!m.contains(e.target)){ m.remove(); document.removeEventListener('click',h);} }), 50);
+  };
+  document.getElementById('owDoc').addEventListener('click', e=>{ e.stopPropagation();
+    menu([['🧾','Chek chiqarish',()=>ordChek()],['🏷','Etiketka chiqarish',()=>ordLabel()]]); });
+  document.getElementById('owAct').addEventListener('click', e=>{ e.stopPropagation();
+    menu([['💰','Narxlash',()=>{owTab='mahsulot';ordRender();}],
+          ['🧾','Chek chiqarish',()=>ordChek()],
+          ['🏷','Etiketka chiqarish',()=>ordLabel()]]); });
+  ({umumiy:owUmumiy, mahsulot:owMahsulot, stat:owStat, soz:owSoz}[owTab])();
+}
+
+/* ---------- TAB 1: UMUMIY ---------- */
+function owUmumiy(){
+  const B=document.getElementById('owBody'), d=owD, o=d.order, cm=d.can_manage;
+  const dis=cm?'':'disabled';
+  const staff=(owUsers||[]).filter(u=>u.role==='admin'||u.role==='bosh_admin');
+  const tikList=(owUsers||[]).filter(u=>u.role==='tikuvchi');
+  const masul = d.bosh
+    ? `<select data-fld="__assign"><option value="">— tanlang —</option>${staff.map(u=>`<option value="${u.id}" ${u.id===o.assigned_to?'selected':''}>${esc(u.full_name)}</option>`).join('')}</select>`
+    : `<input value="${esc(o.assigned_name||'—')}" disabled>`;
+  const seams=(d.seams||[]).map(s=>`
+    <div class="seamrow" data-sid="${s.id}">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+        <b>🧵 ${esc(s.tikuvchi)}</b>
+        ${cm?`<select data-sst style="width:auto;padding:5px 7px;font-size:12px;border-radius:8px">
+          ${Object.keys(SEAM_ST).map(k=>`<option value="${k}" ${k===s.status?'selected':''}>${SEAM_ST[k]}</option>`).join('')}
+        </select>`:`<span class="ost">${SEAM_ST[s.status]||s.status}</span>`}
+      </div>
+      <div class="hline">${esc(s.work||'')} ${s.note?'· '+esc(s.note):''}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span style="font-weight:700">${fmtSom(s.fee)} so'm</span>
+        ${cm?`<button class="exdel" data-sdel>✕</button>`:''}
+      </div>
+    </div>`).join('');
+  const feed=[
+    ...d.history.map(h=>({at:h.at, ic:'🔄', t:`<b>${esc(h.by)}</b> bosqichni o'zgartirdi: ${STGL[h.status]||h.status}`})),
+    ...d.comments.map(c=>({at:c.at, ic:'💬', t:`<b>${esc(c.name)}</b>: ${esc(c.text)}`})),
+    ...d.tasks.map(t=>({at:t.deadline, ic:t.status==='bajarildi'?'✅':(t.status==='kechikdi'?'⚠️':'📌'),
+      t:`Topshiriq → <b>${esc(t.assignee)}</b>: ${esc(t.text)}${t.metr?' · 📐'+t.metr+'m':''}${t.result?' · natija: '+esc(t.result):''}`})),
+  ].sort((a,b)=>(a.at||'').localeCompare(b.at||''))
+   .map(f=>`<div class="feed-i"><div class="fic">${f.ic}</div><div>${f.t}<div class="fw">${(f.at||'').replace('T',' ').slice(0,16)}</div></div></div>`)
+   .join('')||'<div class="hint">Faoliyat hali yo\'q</div>';
+  const fotos=(d.photos||[]).map(p=>`<img src="${p.data}" style="width:70px;height:70px;object-fit:cover;border-radius:10px;border:1px solid var(--line)">`).join('');
+  B.innerHTML=`
+    <div class="card"><div class="nhead">📋 Ma'lumotlar</div>
+      <div class="fgrid">
+        <div><label>Mas'ul shaxs</label>${masul}</div>
+        <div><label>Buyurtma raqami</label><input value="#${o.id}" disabled></div>
+        <div><label>Sana</label><input value="${(o.created_at||'').replace('T',' ').slice(0,16)}" disabled></div>
+        <div><label>Yetkazish sanasi</label><input type="date" data-fld="delivery_date" value="${o.delivery_date}" ${dis}></div>
+        <div><label>Pul birligi</label><select data-fld="currency" ${dis}>
+          ${["so'm","USD"].map(c=>`<option ${c===o.currency?'selected':''}>${c}</option>`).join('')}</select></div>
+        <div><label>Manba</label><input data-fld="source" value="${esc(o.source)}" ${dis}></div>
+        <div><label>Mijoz ismi</label><input data-fld="client_name" value="${esc(o.client_name||o.full_name)}" ${dis}></div>
+        <div><label>Telefon</label><input data-fld="client_phone" value="${esc(o.client_phone)}" ${dis}></div>
+        <div class="full"><label>Yetkazib berish manzili</label>
+          <div class="cmtbox" style="margin:0"><textarea data-fld="delivery_address" style="flex:1" ${dis}>${esc(o.delivery_address)}</textarea>
+          ${cm?`<button class="ow-btn" id="owGeo" title="Joriy joylashuv" style="flex:0 0 auto">📍</button>`:''}</div></div>
+        <div class="full"><label>Eslatma</label><textarea data-fld="note" ${dis}>${esc(o.note)}</textarea></div>
+      </div>
+      <details style="margin-top:10px"><summary style="font-size:13px;color:var(--muted);cursor:pointer">Hisob-kitob matni</summary><pre class="otext">${esc(o.text||'')}</pre></details>
+    </div>
+    <div class="card"><div class="nhead">🧵 Tikuvchilar (qo'shimcha xarajat: ${fmtSom(ordSeamSum())} so'm)</div>
+      ${seams||'<div class="hint">Tikuvchi biriktirilmagan</div>'}
+      ${cm?`<div class="fgrid" style="margin-top:10px">
+        <div><label>Tikuvchi</label><select id="smU">${tikList.length?tikList.map(u=>`<option value="${u.id}">${esc(u.full_name)}</option>`).join(''):'<option value="">— tikuvchi yo\'q —</option>'}</select></div>
+        <div><label>Haqi (so'm)</label><input id="smF" type="number" placeholder="100000"></div>
+        <div><label>Ish (mahsulot/xizmat)</label><input id="smW" placeholder="Tul tikish"></div>
+        <div><label>Izoh</label><input id="smN" placeholder="…"></div>
+      </div>
+      <button class="btn btn-primary" id="smAdd" style="margin-top:8px;width:100%">＋ Tikuvchi biriktirish</button>`:''}
+    </div>
+    <div class="card"><div class="nhead">📷 Xona rasmlari</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${fotos||'<span class="hint">Rasm yo\'q</span>'}</div>
+      <label class="fotobtn" style="margin-top:10px">📷 Rasm qo'shish<input type="file" accept="image/*" hidden id="owFoto"></label>
+    </div>
+    <div class="card"><div class="nhead">🕒 Faoliyat tasmasi</div>
+      <div style="max-height:340px;overflow:auto">${feed}</div>
+      <div class="cmtbox"><input id="owCmt" placeholder="Eslatma yozing…">
+        <button class="btn btn-primary" id="owCmtS" style="flex:0 0 auto;padding:10px 14px">➤</button></div>
+      ${cm?`<button class="ow-btn" id="owTaskT" style="margin-top:8px">📌 Topshiriq qo'shish</button>
+      <div id="owTaskF" style="display:none;margin-top:8px">
+        <div class="fgrid">
+          <div><label>Kimga</label><select id="tskUser">${(owUsers||[]).map(u=>`<option value="${u.id}">${esc(u.full_name)} (${u.rol_label||''})</option>`).join('')}</select></div>
+          <div><label>Muddat (sana·vaqt)</label><input id="tskDl" type="datetime-local" value="${dtLocal(24)}"></div>
+          <div><label>Tikuv metri</label><input id="tskM" type="number" step="0.1" placeholder="0"></div>
+        </div>
+        <div class="cmtbox"><input id="tskT" placeholder="Topshiriq matni…">
+          <button class="btn btn-primary" id="tskAdd" style="flex:0 0 auto;padding:10px 14px">＋</button></div>
+      </div>`:''}
+    </div>`;
+  const oid=o.id;
+  B.querySelectorAll('[data-fld]').forEach(el=> el.addEventListener('change', async ()=>{
+    const k=el.dataset.fld;
+    try{
+      if(k==='__assign'){ if(el.value) await api('/api/orders/'+oid+'/assign',{method:'POST',body:JSON.stringify({user_id:el.value})}); }
+      else await api('/api/orders/'+oid+'/fields',{method:'POST',body:JSON.stringify({[k]:el.value})});
+      toast('Saqlandi ✓');
+    }catch(e){ toast('Xatolik'); }
+  }));
+  const geo=document.getElementById('owGeo');
+  if(geo) geo.addEventListener('click', ()=>{
+    if(!navigator.geolocation){ toast('Geolokatsiya mavjud emas'); return; }
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      const ta=B.querySelector('[data-fld="delivery_address"]');
+      ta.value=(ta.value?ta.value+' ':'')+`📍(${pos.coords.latitude.toFixed(5)},${pos.coords.longitude.toFixed(5)})`;
+      try{ await api('/api/orders/'+oid+'/fields',{method:'POST',body:JSON.stringify({delivery_address:ta.value})}); toast('Manzil saqlandi ✓'); }catch(e){}
+    }, ()=>toast('Joylashuv olinmadi'));
+  });
+  const smA=document.getElementById('smAdd');
+  if(smA) smA.addEventListener('click', async ()=>{
+    const uid=document.getElementById('smU').value;
+    if(!uid){ toast('Tikuvchi tanlang (u botga /start yozib, tikuvchi bo\'lishi kerak)'); return; }
+    try{
+      await api('/api/orders/'+oid+'/seam',{method:'POST',body:JSON.stringify({
+        tikuvchi_id:uid, work:document.getElementById('smW').value,
+        fee:parseFloat(document.getElementById('smF').value)||0,
+        note:document.getElementById('smN').value})});
+      toast('Biriktirildi ✓'); ordOpen(oid,'umumiy');
+    }catch(e){ toast('Xatolik'); }
+  });
+  B.querySelectorAll('.seamrow').forEach(row=>{
+    const sid=+row.dataset.sid;
+    const st=row.querySelector('[data-sst]');
+    if(st) st.addEventListener('change', async ()=>{
+      try{ await api('/api/orders/'+oid+'/seam',{method:'POST',body:JSON.stringify({seam_id:sid,status:st.value})}); toast('✓'); }catch(e){ toast('Xatolik'); }
+    });
+    const del=row.querySelector('[data-sdel]');
+    if(del) del.addEventListener('click', async ()=>{
+      try{ await api('/api/orders/'+oid+'/seam',{method:'POST',body:JSON.stringify({seam_id:sid,delete:true})}); ordOpen(oid,'umumiy'); }catch(e){ toast('Xatolik'); }
+    });
+  });
+  document.getElementById('owFoto').addEventListener('change', e=>{
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
+    resizeImg(f, async u=>{
+      try{ await api('/api/orders/'+oid+'/photo',{method:'POST',body:JSON.stringify({photo:u})}); toast('Rasm qo\'shildi ✓'); ordOpen(oid,'umumiy'); }
+      catch(e){ toast('Xatolik'); }
+    });
+  });
+  document.getElementById('owCmtS').addEventListener('click', async ()=>{
+    const t=document.getElementById('owCmt').value.trim(); if(!t) return;
+    try{ await api('/api/orders/'+oid+'/comment',{method:'POST',body:JSON.stringify({text:t})}); ordOpen(oid,'umumiy'); }catch(e){ toast('Xatolik'); }
+  });
+  const tt2=document.getElementById('owTaskT');
+  if(tt2) tt2.addEventListener('click', ()=>{ const f=document.getElementById('owTaskF'); f.style.display=f.style.display==='none'?'block':'none'; });
+  const ta2=document.getElementById('tskAdd');
+  if(ta2) ta2.addEventListener('click', async ()=>{
+    const t=document.getElementById('tskT').value.trim(); if(!t){ toast('Matn?'); return; }
+    try{
+      await api('/api/orders/'+oid+'/task',{method:'POST',body:JSON.stringify({
+        assignee_id:document.getElementById('tskUser').value,
+        deadline:document.getElementById('tskDl').value,
+        metr:parseFloat(document.getElementById('tskM').value)||0, text:t})});
+      toast('Topshiriq qo\'yildi ✓'); ordOpen(oid,'umumiy');
+    }catch(e){ toast('Xatolik'); }
+  });
+}
+
+/* ---------- TAB 2: MAHSULOTLAR ---------- */
+function owMahsulot(){
+  const B=document.getElementById('owBody'), d=owD, o=d.order, cm=d.can_manage;
+  const items=d.items||[];
+  const prdOpts=(owPrd||[]).map(p=>`<option value="${esc(p.name)}" data-price="${p.price}" data-qty="${p.qty}">`).join('');
+  const row=(it,i)=>{
+    const jq=it.qty, jn=it.qty*it.price, jc=+it.discount||0;
+    const avail=(owPrd||[]).find(p=>p.name===it.name);
+    return `<tr data-iid="${it.id}">
+      <td>${i+1}</td>
+      <td><input list="prdDL" data-ik="name" value="${esc(it.name)}" style="min-width:120px" ${cm?'':'disabled'}></td>
+      <td><select data-ik="unit" ${cm?'':'disabled'}>${['m','dona','kompl'].map(u=>`<option ${u===it.unit?'selected':''}>${u}</option>`).join('')}</select></td>
+      <td><input data-ik="warehouse" value="${esc(it.warehouse)}" style="min-width:70px" ${cm?'':'disabled'}></td>
+      <td class="tsum">${avail?avail.qty:'—'}</td>
+      <td><input data-ik="qty" type="number" step="0.01" value="${it.qty}" ${cm?'':'disabled'}></td>
+      <td class="tsum" data-c="jq">${fmtM(jq)}</td>
+      <td>Sotuv</td>
+      <td><input data-ik="price" type="number" value="${it.price}" ${cm?'':'disabled'}></td>
+      <td class="tsum" data-c="jn">${fmtSom(jn)}</td>
+      <td><input data-ik="discount" type="number" value="${it.discount}" ${cm?'':'disabled'}></td>
+      <td class="tsum" data-c="jc">${fmtSom(jc)}</td>
+      <td>${cm?`<button class="exdel" data-idel>✕</button>`:''}</td>
+    </tr>`;
+  };
+  const sums=()=>{
+    const j=items.reduce((s,x)=>s+x.qty*x.price,0), c=items.reduce((s,x)=>s+(+x.discount||0),0), f=ordSeamSum();
+    return {j,c,sot:j-c,f,yak:j-c+f};
+  };
+  const s=sums();
+  B.innerHTML=`
+    <div class="card">
+      <div class="cmtbox" style="margin:0 0 10px"><input id="itFilter" placeholder="🔍 Mahsulot/kategoriya bo'yicha filtr…"></div>
+      <datalist id="prdDL">${prdOpts}</datalist>
+      <div class="itbl-wrap"><table class="itbl" id="itbl">
+        <tr><th>№</th><th>Nomi</th><th>O'lchov</th><th>Ombor</th><th>Mavjud</th><th>Miqdori</th><th>Jami miqdor</th><th>Narx turi</th><th>Narxi</th><th>Jami narxi</th><th>Chegirma</th><th>Jami chegirma</th><th></th></tr>
+        ${items.map(row).join('')||`<tr><td colspan="13" style="padding:14px;color:var(--muted)">Qator yo'q — «＋ Mahsulot qo'shish»ni bosing</td></tr>`}
+      </table></div>
+      ${cm?`<button class="btn btn-ghost" id="itAdd" style="margin-top:10px;width:100%">＋ Mahsulot qo'shish</button>`:''}
+      <div style="margin-top:12px">
+        <div class="repline"><span>Mahsulotlar jami</span><b id="s-j">${fmtSom(s.j)}</b></div>
+        <div class="repline"><span>Jami chegirma</span><b id="s-c">− ${fmtSom(s.c)}</b></div>
+        <div class="repline"><span>Sotuv summasi</span><b id="s-s">${fmtSom(s.sot)}</b></div>
+        <div class="repline"><span>Qo'shimcha xarajatlar (tikuvchilar)</span><b id="s-f">${fmtSom(s.f)}</b></div>
+        <div class="repline" style="font-size:15px"><span><b>YAKUNIY (xarajatlar bilan)</b></span><b id="s-y">${fmtSom(s.yak)} ${esc(o.currency)}</b></div>
+      </div>
+    </div>`;
+  const oid=o.id;
+  document.getElementById('itFilter').addEventListener('input', e=>{
+    const q=e.target.value.toLowerCase();
+    B.querySelectorAll('#itbl tr[data-iid]').forEach(tr=>{
+      const nm=tr.querySelector('[data-ik="name"]').value.toLowerCase();
+      tr.style.display = nm.includes(q)?'':'none';
+    });
+  });
+  const ia=document.getElementById('itAdd');
+  if(ia) ia.addEventListener('click', async ()=>{
+    try{ await api('/api/orders/'+oid+'/item',{method:'POST',body:JSON.stringify({name:'',qty:1,price:0})}); ordOpen(oid,'mahsulot'); }
+    catch(e){ toast('Xatolik'); }
+  });
+  B.querySelectorAll('tr[data-iid]').forEach(tr=>{
+    const iid=+tr.dataset.iid;
+    const it=items.find(x=>x.id===iid);
+    tr.querySelectorAll('[data-ik]').forEach(inp=> inp.addEventListener('change', async ()=>{
+      const k=inp.dataset.ik;
+      let v=inp.value;
+      if(['qty','price','discount'].includes(k)) v=parseFloat(v)||0;
+      it[k]=v;
+      if(k==='name'){
+        const p=(owPrd||[]).find(x=>x.name===v);
+        if(p && !it.price){ it.price=p.price; tr.querySelector('[data-ik="price"]').value=p.price;
+          try{ await api('/api/orders/'+oid+'/item',{method:'POST',body:JSON.stringify({item_id:iid,price:p.price})}); }catch(e){} }
+        tr.children[4].textContent = p?p.qty:'—';
+      }
+      try{ await api('/api/orders/'+oid+'/item',{method:'POST',body:JSON.stringify({item_id:iid,[k]:v})}); }catch(e){ toast('Xatolik'); return; }
+      tr.querySelector('[data-c="jq"]').textContent=fmtM(it.qty);
+      tr.querySelector('[data-c="jn"]').textContent=fmtSom(it.qty*it.price);
+      tr.querySelector('[data-c="jc"]').textContent=fmtSom(+it.discount||0);
+      const s2=sums();
+      document.getElementById('s-j').textContent=fmtSom(s2.j);
+      document.getElementById('s-c').textContent='− '+fmtSom(s2.c);
+      document.getElementById('s-s').textContent=fmtSom(s2.sot);
+      document.getElementById('s-y').textContent=fmtSom(s2.yak)+' '+o.currency;
+    }));
+    const del=tr.querySelector('[data-idel]');
+    if(del) del.addEventListener('click', async ()=>{
+      try{ await api('/api/orders/'+oid+'/item',{method:'POST',body:JSON.stringify({item_id:iid,delete:true})}); ordOpen(oid,'mahsulot'); }
+      catch(e){ toast('Xatolik'); }
+    });
+  });
+}
+
+/* ---------- TAB 3: STATISTIKA ---------- */
+function owStat(){
+  const B=document.getElementById('owBody'), d=owD, st=d.stats, cm=d.admin;
+  const box=(n,l,extra='')=>`<div class="statbox"><div class="n">${n}</div><div class="l">${l}</div>${extra}</div>`;
+  B.innerHTML=`<div class="statgrid">
+    ${box(esc(st.source),'Buyurtma manbasi')}
+    ${box((st.created_at||'').slice(0,10),'Yaratilgan sana')}
+    ${box(st.days+' kun','Jarayonda')}
+    ${box(st.notes,'Eslatmalar / izohlar')}
+    ${box('📥 '+st.calls_in+' · 📤 '+st.calls_out,'Qo\'ng\'iroqlar (kirish/chiqish)',
+      cm?`<div style="display:flex;gap:6px;margin-top:8px">
+        <button class="ow-btn" id="cIn">＋ Kirish</button><button class="ow-btn" id="cOut">＋ Chiqish</button></div>`:'')}
+    ${box('✅ '+st.tasks_done+' · ⚠️ '+st.tasks_over,'Vazifalar (bajarilgan/kechikkan)')}
+  </div>`;
+  const oid=d.order.id;
+  const reg=async t=>{ try{ await api('/api/orders/'+oid+'/call',{method:'POST',body:JSON.stringify({type:t})}); ordOpen(oid,'stat'); }catch(e){ toast('Xatolik'); } };
+  const ci=document.getElementById('cIn'); if(ci) ci.addEventListener('click',()=>reg('in'));
+  const co=document.getElementById('cOut'); if(co) co.addEventListener('click',()=>reg('out'));
+}
+
+/* ---------- TAB 4: SOZLAMALAR (maxsus maydonlar) ---------- */
+function owSoz(){
+  const B=document.getElementById('owBody'), d=owD, cm=d.can_manage, oid=d.order.id;
+  const defs=d.cf.defs, vals=d.cf.vals||{};
+  B.innerHTML=`<div class="card">
+    <div class="nhead">⚙️ Maxsus maydonlar ro'yxati ${cm?'(☰ sudrab tartiblang)':''}</div>
+    <div id="cfList">${defs.map(f=>`
+      <div class="cfrow" draggable="${cm}" data-cid="${f.id}">
+        <span class="drag">☰</span>
+        <input data-cfn value="${esc(f.name)}" style="flex:1;min-width:90px" ${cm?'':'disabled'}>
+        <input data-cfv value="${esc(vals[f.id]||'')}" placeholder="qiymat" style="flex:1;min-width:90px" ${cm?'':'disabled'}>
+        ${cm?`<button class="exdel" data-cfd>✕</button>`:''}
+      </div>`).join('')||'<div class="hint">Maydon yo\'q</div>'}</div>
+    ${cm?`<div class="cmtbox"><input id="cfNew" placeholder="Yangi maydon nomi…">
+      <button class="btn btn-primary" id="cfAdd" style="flex:0 0 auto;padding:10px 14px">＋ Qo'shish</button></div>`:''}
+  </div>`;
+  if(!cm) return;
+  document.getElementById('cfAdd').addEventListener('click', async ()=>{
+    const n=document.getElementById('cfNew').value.trim(); if(!n){ toast('Nom kiriting'); return; }
+    try{ await api('/api/cf',{method:'POST',body:JSON.stringify({name:n})}); ordOpen(oid,'soz'); }catch(e){ toast('Xatolik'); }
+  });
+  const list=document.getElementById('cfList');
+  list.querySelectorAll('.cfrow').forEach(rw=>{
+    const cid=+rw.dataset.cid;
+    rw.querySelector('[data-cfn]').addEventListener('change', async e=>{
+      try{ await api('/api/cf',{method:'POST',body:JSON.stringify({id:cid,name:e.target.value})}); toast('✓'); }catch(e2){ toast('Xatolik'); }
+    });
+    rw.querySelector('[data-cfv]').addEventListener('change', async e=>{
+      try{ await api('/api/orders/'+oid+'/cf',{method:'POST',body:JSON.stringify({def_id:cid,value:e.target.value})}); toast('✓'); }catch(e2){ toast('Xatolik'); }
+    });
+    const dl=rw.querySelector('[data-cfd]');
+    if(dl) dl.addEventListener('click', async ()=>{
+      try{ await api('/api/cf',{method:'POST',body:JSON.stringify({id:cid,delete:true})}); ordOpen(oid,'soz'); }catch(e){ toast('Xatolik'); }
+    });
+    rw.addEventListener('dragstart', ()=>rw.classList.add('dragging'));
+    rw.addEventListener('dragend', async ()=>{
+      rw.classList.remove('dragging');
+      const order=[...list.querySelectorAll('.cfrow')].map(x=>+x.dataset.cid);
+      try{ await api('/api/cf',{method:'POST',body:JSON.stringify({order})}); toast('Tartib saqlandi ✓'); }catch(e){}
+    });
+  });
+  list.addEventListener('dragover', e=>{
+    e.preventDefault();
+    const drag=list.querySelector('.dragging'); if(!drag) return;
+    const after=[...list.querySelectorAll('.cfrow:not(.dragging)')]
+      .find(x=> e.clientY <= x.getBoundingClientRect().top + x.offsetHeight/2);
+    if(after) list.insertBefore(drag, after); else list.appendChild(drag);
+  });
+}
+
+/* ---------- Chek / Etiketka (buyurtma ichidan) ---------- */
+function openDocModal(html){
+  document.getElementById('chekWrap').innerHTML=html;
+  document.getElementById('chekModal').style.display='flex';
+}
+function ordChek(){
+  const d=owD, o=d.order, items=d.items||[];
+  if(!items.length){ toast("Avval «Mahsulotlar» tabida qatorlar qo'shing"); owTab='mahsulot'; ordRender(); return; }
+  const j=items.reduce((s,x)=>s+x.qty*x.price,0), c=items.reduce((s,x)=>s+(+x.discount||0),0);
+  openDocModal(`<div class="chk" id="chkCard">
+    <div class="chk-top"><div class="nm">RAYYON PARDALAR</div><div class="sub">Sifatli pardalar va to'qimachilik mahsulotlari</div></div>
+    <div class="chk-title">HISOB-KITOB CHEKI</div>
+    <div class="chk-meta">
+      <div>Buyurtma <b>#${o.id}</b></div><div>Sana: <b>${new Date().toLocaleDateString('ru-RU')}</b></div>
+      ${o.client_name||o.full_name?`<div>Mijoz: <b>${esc(o.client_name||o.full_name)}</b></div>`:''}
+      ${o.client_phone?`<div>Tel: <b>${esc(o.client_phone)}</b></div>`:''}
+      ${o.delivery_address?`<div style="flex-basis:100%">Manzil: <b>${esc(o.delivery_address)}</b></div>`:''}
+    </div>
+    <div class="chk-room"><table>
+      <tr><th class="l">Mahsulot</th><th style="width:52px">Miqdor</th><th style="width:60px">Narx</th><th style="width:70px">Summa</th></tr>
+      ${items.map(x=>`<tr><td class="l">${esc(x.name||'—')}</td><td>${fmtM(x.qty)} ${esc(x.unit)}</td><td>${fmtSom(x.price)}</td><td class="s">${fmtSom(x.qty*x.price)}</td></tr>`).join('')}
+      ${c?`<tr><td class="l">Chegirma</td><td></td><td></td><td class="s">− ${fmtSom(c)}</td></tr>`:''}
+    </table></div>
+    <div class="chk-grand"><span class="gl">UMUMIY SUMMA</span><span class="gv">${fmtSom(j-c)} ${esc(o.currency)}</span></div>
+    <div class="chk-foot"><div class="th">Xaridingiz uchun tashakkur!</div><div>Rayyon Pardalar Do'koni · Tel: +998 90 940 11 41</div></div>
+  </div>`);
+}
+function ordLabel(){
+  const d=owD, o=d.order;
+  openDocModal(`<div class="chk" id="chkCard" style="text-align:center">
+    <div class="chk-top"><div class="nm">RAYYON PARDALAR</div></div>
+    <div style="padding:18px 16px">
+      <div style="font-size:26px;font-weight:800">BUYURTMA #${o.id}</div>
+      <div style="font-size:16px;font-weight:700;margin-top:8px">${esc(o.client_name||o.full_name)}</div>
+      ${o.client_phone?`<div style="font-size:14px;margin-top:3px">📞 ${esc(o.client_phone)}</div>`:''}
+      ${o.delivery_address?`<div style="font-size:12px;color:#6b7688;margin-top:6px">📍 ${esc(o.delivery_address)}</div>`:''}
+      ${o.delivery_date?`<div style="font-size:13px;margin-top:6px">🚚 Yetkazish: <b>${o.delivery_date}</b></div>`:''}
+      <div style="margin-top:10px"><span class="ost" style="font-size:13px">${STGL[o.status]||o.status}</span></div>
+    </div>
+    <div class="chk-foot"><div>Tel: +998 90 940 11 41</div></div>
+  </div>`);
+}
+
+/* ---------- Hisobot: tikuvchilar bilan (eski loadReports o'rnini bosadi) ---------- */
+async function loadReports(){
+  const box=document.getElementById('prof-reports'); if(!box) return;
+  if(!API){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="hint" style="margin-top:14px;text-align:center">Hisobot yuklanmoqda…</div>';
+  try{
+    const d=await api('/api/reports');
+    const st=Object.entries(d.orders.by_status).filter(([k,v])=>v>0)
+      .map(([k,v])=>`<div class="repline"><span>${STGL[k]||k}</span><b>${v}</b></div>`).join('');
+    const wk=d.workers.map(w=>`<div class="repline"><span>${esc(w.name)} <span class="fw">${esc(w.role)}</span></span><b>✅${w.bajarildi} 🕒${w.ochiq} ⚠️${w.kechikdi}${w.haq?' · 💰'+fmtSom(w.haq):''}</b></div>`).join('')
+      || '<div class="hint">Task berilmagan</div>';
+    const tk=(d.tikuvchilar||[]).map(t=>`<div class="repline"><span>🧵 ${esc(t.name)} — ${t.jami} ish (faol ${t.faol})</span><b>to'lanadigan: ${fmtSom(t.tolanadigan)} / jami: ${fmtSom(t.jami_haq)}</b></div>`).join('')
+      || '<div class="hint">Tikuvchi biriktirilmagan</div>';
+    const roles=Object.entries(d.members.by_role||{}).map(([r,n])=>`<div class="repline"><span>${r}</span><b>${n}</b></div>`).join('');
+    const mb=d.members.latest.map(m=>`<div class="repline"><span>${esc(m.name)} <span class="fw">${esc(m.role)}</span></span><b>${m.at}</b></div>`).join('');
+    box.innerHTML=`
+      <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">📋 Buyurtmalar (jami ${d.orders.total})</div>${st||'<div class="hint">Yo\'q</div>'}</div>
+      <div class="card" style="text-align:left"><div class="nhead">🧵 Tikuvchilar yuklamasi va haqi</div>${tk}</div>
+      <div class="card" style="text-align:left"><div class="nhead">👷 Ishchilar (tasklar)</div>${wk}</div>
+      <div class="card" style="text-align:left"><div class="nhead">👥 A'zolar (jami ${d.members.total})</div>${roles}${mb}</div>`;
+  }catch(e){ box.innerHTML='<div class="hint" style="margin-top:14px;text-align:center">Hisobot yuklanmadi (faqat adminlar uchun)</div>'; }
 }
 </script>
 </body>
