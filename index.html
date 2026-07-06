@@ -100,6 +100,24 @@
   .btn-ghost{background:var(--card);color:var(--text);border:1.5px solid var(--line);}
   .footnote{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;}
 
+  /* ===== Bo'limlar (tab) ===== */
+  .page{display:none;} .page.active{display:block;}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+    display:flex;z-index:150;padding:6px 4px;box-shadow:0 -4px 16px rgba(20,40,90,.06);}
+  .tab{flex:1;border:none;background:transparent;color:var(--muted);font-size:10.5px;font-weight:600;
+    display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;cursor:pointer;border-radius:10px;}
+  .tab .ti{font-size:20px;line-height:1;}
+  .tab.on{color:var(--brand);background:var(--brand-soft);}
+  .tab[hidden]{display:none;}
+  .ph-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:28px 20px;text-align:center;margin-top:6px;}
+  .ph-card .pic{font-size:42px;margin-bottom:10px;}
+  .ph-card h2{margin:0 0 8px;font-size:19px;font-weight:800;}
+  .ph-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.6;}
+  .rolebadge{display:inline-block;background:var(--brand-soft);color:var(--brand);font-weight:700;font-size:12px;
+    padding:5px 14px;border-radius:20px;margin-top:8px;}
+  .soon{display:inline-block;margin-top:14px;background:#fff3e0;color:#b26a00;font-weight:700;font-size:12px;padding:6px 14px;border-radius:10px;}
+
   /* ===== Chek modal ===== */
   .modal{position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:200;display:flex;
     align-items:flex-start;justify-content:center;overflow:auto;padding:18px 12px;}
@@ -141,6 +159,7 @@
 </div>
 
 <div class="wrap">
+  <div class="page active" id="page-hisob">
   <div class="card">
     <div class="nhead">👤 Mijoz ma'lumotlari</div>
     <div class="field"><label>Ism</label><input type="text" data-m="nom" placeholder="Mijoz ismi"></div>
@@ -166,7 +185,42 @@
     <button class="btn btn-ghost" id="sendBtn" style="flex:1">✅ Botga yuborish (matn)</button>
   </div>
   <div class="footnote">Miqdorlar avtomatik tavsiya — har birini va narxni qo'lda tahrirlash mumkin.</div>
-</div>
+  </div><!-- page-hisob -->
+
+  <div class="page" id="page-mahsulot">
+    <div class="ph-card">
+      <div class="pic">🛒</div>
+      <h2>Mahsulotlar</h2>
+      <p>Mahsulot katalogi: rasm, nom, narx va kategoriya (tul, korsaj, zashitniy…). Adminlar qo'lda yoki fayl (shablon) orqali mahsulot qo'shadi.</p>
+      <div class="soon">⏳ Backend ulanganда ishga tushadi</div>
+    </div>
+  </div>
+
+  <div class="page" id="page-buyurtma">
+    <div class="ph-card">
+      <div class="pic">📋</div>
+      <h2>Buyurtmalar</h2>
+      <p>Buyurtmalar CRM: holat (yangi → jarayonда → tayyor), tasklar va kechikishда bosh adminга xabar. Admin buyurtma yaratsa shu yerда ko'rinadi; mijoz o'z buyurtmasini kuzatadi.</p>
+      <div class="soon">⏳ Backend ulanganда ishga tushadi</div>
+    </div>
+  </div>
+
+  <div class="page" id="page-profil">
+    <div class="ph-card">
+      <div class="pic">👤</div>
+      <h2 id="prof-name">Foydalanuvchi</h2>
+      <div class="rolebadge" id="prof-role">—</div>
+      <p style="margin-top:14px" id="prof-note"></p>
+    </div>
+  </div>
+</div><!-- wrap -->
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab" data-tab="hisob"><span class="ti">🧮</span>Hisob-kitob</button>
+  <button class="tab" data-tab="mahsulot"><span class="ti">🛒</span>Mahsulotlar</button>
+  <button class="tab" data-tab="buyurtma"><span class="ti">📋</span>Buyurtmalar</button>
+  <button class="tab" data-tab="profil"><span class="ti">👤</span>Profil</button>
+</nav>
 
 <div class="modal" id="chekModal" style="display:none">
   <div class="modal-inner">
@@ -392,7 +446,18 @@ function card(r,i){
 
   el.querySelectorAll('.chip').forEach(ch=>{
     ch.addEventListener('click', ()=>{
-      const k=ch.dataset.parda; r.sel[k]=!r.sel[k]; ch.classList.toggle('on', r.sel[k]);
+      const k=ch.dataset.parda;
+      const on=!r.sel[k];
+      if(on){
+        if(k==='parter2'){
+          if(!r.sel.parter){ toast('Avval Parter tanlang'); return; }
+        } else {
+          const mainCount=['zashitniy','tul','parter'].filter(x=>r.sel[x]).length;
+          if(mainCount>=r.qator){ toast(r.qator+' qatorga faqat '+r.qator+' parda ilinadi'); return; }
+        }
+      } else if(k==='parter'){ r.sel.parter2=false; }
+      r.sel[k]=on;
+      el.querySelectorAll('.chip').forEach(c=> c.classList.toggle('on', !!r.sel[c.dataset.parda]));
       refresh(el,r);
     });
   });
@@ -431,6 +496,8 @@ function buildNatija(el,r){
   let html = `<div class="hint">Har mahsulot uchun nom, miqdor va narxni tahrirlash mumkin</div>`;
   active.forEach(p=>{
     const key=p.key;
+    const allowT = r.qator===1 ? ['turba','rils'] : ['pataloshniy','turba','rils'];
+    if(!allowT.includes(r.cfg[key].kturi)){ r.cfg[key].kturi=allowT[0]; if(key==='tul') r.cfg.tul.coef=COEF_DEFAULT[allowT[0]]; }
     const t = tavsiya(r, key);
     const prev = oldQ[key] || {};
     const prevAcc = prev.acc || [];
@@ -454,7 +521,8 @@ function buildNatija(el,r){
         <span class="qeq">=</span><span class="qsum" data-ls="mato">0</span>
       </div>`;
     const accLinesHtml = r.q[key].acc.map(a=>`<div class="qline">
-        <input class="accnamei" data-accname="${a.f}" value="${esc(a.uname||a.name)}" placeholder="${a.name}">
+        <span class="qlbl">${a.name}</span>
+        <input class="accnamei" data-accname="${a.f}" value="${esc(a.uname||'')}" placeholder="${a.name.toLowerCase()} nomi">
         <input class="qi" type="number" step="${a.unit==='dona'?'1':'0.01'}" data-acc="${a.f}" value="${a.q}">
         <span class="qx">${a.unit} ×</span>
         <input class="pi" type="number" inputmode="numeric" data-accp="${a.f}" value="${a.p||''}" placeholder="narx">
@@ -466,7 +534,7 @@ function buildNatija(el,r){
           <span class="pname">${p.label}</span>
           <input class="mnamei" data-mname placeholder="mato nomi" value="${esc(r.cfg[key].name)}">
           <select class="ksel" data-kturi>
-            ${Object.keys(TURI).map(k=>`<option value="${k}" ${k===r.cfg[key].kturi?'selected':''}>${TURI[k]}</option>`).join('')}
+            ${allowT.map(k=>`<option value="${k}" ${k===r.cfg[key].kturi?'selected':''}>${TURI[k]}</option>`).join('')}
           </select>
           ${ktogSel}
           ${coefSel}
@@ -732,6 +800,34 @@ function fallbackCopy(t){const a=document.createElement('textarea');a.value=t;do
 let tt;function toast(m){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';e.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#12203c;color:#fff;padding:10px 18px;border-radius:12px;font-size:14px;z-index:99;opacity:0;transition:opacity .2s';document.body.appendChild(e);}e.textContent=m;e.style.opacity='1';clearTimeout(tt);tt=setTimeout(()=>e.style.opacity='0',1500);}
 
 addRoom(false);
+
+/* ===== Bo'limlar (tab) + rollar ===== */
+/* Admin Telegram ID lari. Bo'sh bo'lsa — hamma admin (test uchun).
+   O'z ID'ingizni qo'shsangiz: faqat siz admin bo'lasiz, qolganlar mijoz. */
+const ADMIN_IDS = [];
+function currentUser(){ return (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null; }
+function isAdmin(){
+  const u=currentUser();
+  if(!u) return true;                       // brauzerда test -> admin
+  return ADMIN_IDS.length ? ADMIN_IDS.includes(u.id) : true;
+}
+function showTab(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+name));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===name));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tab').forEach(t=> t.addEventListener('click', ()=> showTab(t.dataset.tab)));
+(function initRole(){
+  const admin=isAdmin(); const u=currentUser();
+  document.getElementById('prof-name').textContent = u ? [u.first_name,u.last_name].filter(Boolean).join(' ') : 'Mehmon (brauzer)';
+  document.getElementById('prof-role').textContent = admin ? '🛠 Admin' : '👤 Mijoz';
+  document.getElementById('prof-note').textContent = admin
+    ? 'Siz admin sifatida hisob-kitob qilib, buyurtma va mahsulot boshqarasiz.'
+    : 'Siz mahsulotlarni ko\'rib, buyurtma berishingiz va uni kuzatishingiz mumkin.';
+  const hisobTab=document.querySelector('.tab[data-tab="hisob"]');
+  if(!admin){ hisobTab.hidden=true; showTab('mahsulot'); }   // mijoz: hisob-kitob yashirin
+  else showTab('hisob');
+})();
 </script>
 </body>
 </html>
