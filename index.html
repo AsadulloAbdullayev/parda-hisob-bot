@@ -876,13 +876,28 @@ document.getElementById('copyBtn').addEventListener('click', ()=>{
   const t=buildReport();
   (navigator.clipboard?.writeText(t)||Promise.reject()).then(()=>toast('Nusxa olindi ✓'), ()=>fallbackCopy(t));
 });
+window.EDIT_ORDER=null;
 document.getElementById('sendBtn').addEventListener('click', async ()=>{
   if(!mijozValid()) return;
   const t=buildReport();
+  /* Tahrirlash rejimi: mavjud buyurtma cheki yangilanadi */
+  if(window.EDIT_ORDER && typeof API!=='undefined' && API){
+    const oid=window.EDIT_ORDER.id;
+    try{
+      await api('/api/orders/'+oid+'/fields',{method:'POST',body:JSON.stringify({
+        text:t, client_name:mijoz.nom, client_phone:mijoz.tel})});
+      window.EDIT_ORDER=null;
+      document.getElementById('sendBtn').textContent='✅ Botga yuborish (matn)';
+      toast('♻️ Buyurtma №'+oid+' cheki yangilandi — xabarlar yuborildi');
+      showTab('buyurtma');
+      return;
+    }catch(e){ toast('Xatolik — qayta urining'); return; }
+  }
   if(typeof API!=='undefined' && API){
     try{
       const fotos=rooms.map(r=>r.foto).filter(Boolean);
-      const d=await api('/api/orders',{method:'POST',body:JSON.stringify({text:t,photos:fotos})});
+      const d=await api('/api/orders',{method:'POST',body:JSON.stringify({
+        text:t, photos:fotos, client_name:mijoz.nom, client_phone:mijoz.tel})});
       toast('✅ Buyurtma №'+d.order_id+' yaratildi!');
       setTimeout(()=>{ if(tg) tg.close(); }, 1200);
       return;
@@ -1781,7 +1796,7 @@ function ordRender(){
   const curIdx=STG.indexOf(o.status);
   const pipe=STG.map((s,i)=>`<div class="ow-st ${s===o.status?'on':(i<curIdx?'done':'')} ${cm?'clk':''}" data-st="${s}">${STGL[s]}</div>`).join('');
   if(!['umumiy','mahsulot','stat'].includes(owTab)) owTab='umumiy';
-  const tabs=[['umumiy','Umumiy'],['mahsulot','Mahsulotlar'],['stat','Statistika']]
+  const tabs=[['umumiy','Umumiy'],['mahsulot','🧾 Chek'],['stat','Statistika']]
     .map(([k,l])=>`<button class="ow-tab ${owTab===k?'on':''}" data-owtab="${k}">${l}</button>`).join('');
   W.innerHTML=`
     <div class="ow-head">
@@ -2297,7 +2312,7 @@ owUmumiy = function(){
     btn.style.cssText='margin-top:5px;padding:4px 10px;font-size:11px';
     btn.textContent='↩ Javob berish';
     btn.addEventListener('click', ()=>{
-      cmt.value='@'+name+': '; cmt.focus();
+      cmt.focus();
       cmt.scrollIntoView({behavior:'smooth',block:'center'});
     });
     container.appendChild(btn);
@@ -2330,6 +2345,151 @@ setTimeout(async ()=>{
     }
   }catch(e){}
 }, 900);
+
+/* ================================================================
+   YANGILANISH: Chek tabi (jadval olib tashlandi), tahrirlash → qayta
+   hisob-kitob, Tikuvchilar bo'limi (balans + pul berish)
+   ================================================================ */
+
+/* Chek tabi: faqat asl chek + Tahrirlash (qayta hisob-kitobga olib boradi) */
+function owMahsulot(){
+  const B=document.getElementById('owBody'), d=owD, o=d.order, cm=d.can_manage;
+  B.innerHTML=`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="nhead" style="margin:0">🧾 Buyurtma cheki</div>
+        ${cm?`<button class="ow-btn" id="txtEdit">✏️ Tahrirlash (qayta hisoblash)</button>`:''}
+      </div>
+      <pre class="otext" style="max-height:460px;overflow:auto">${esc(o.text||'')}</pre>
+      <div class="hint" style="margin-top:6px">Tahrirlash bosilsa — Hisob-kitob bo'limi ochiladi;
+      qayta hisoblab «Yuborish»ni bossangiz shu chek yangilanadi va mijoz+adminga xabar boradi.</div>
+    </div>`;
+  const te=document.getElementById('txtEdit');
+  if(te) te.addEventListener('click', ()=>{
+    window.EDIT_ORDER={id:o.id};
+    /* mijoz maydonlarini buyurtmadan to'ldiramiz */
+    const n=document.querySelector('[data-m="nom"]'), t=document.querySelector('[data-m="tel"]');
+    if(n){ n.value=o.client_name||o.full_name||''; n.dispatchEvent(new Event('input',{bubbles:true})); }
+    if(t){ t.value=o.client_phone||''; t.dispatchEvent(new Event('input',{bubbles:true})); }
+    document.getElementById('sendBtn').textContent='✏️ Buyurtma №'+o.id+' ni yangilash';
+    ordClose();
+    showTab('hisob');
+    toast('Qayta hisob-kitob qiling — «Yangilash» tugmasi chekni almashtiradi');
+  });
+}
+
+/* Dokumentlar → Chek chiqarish: asl chek matnidan rasm */
+function ordChek(){
+  const d=owD, o=d.order;
+  openDocModal(`<div class="chk" id="chkCard">
+    <div class="chk-top"><div class="nm">RAYYON PARDALAR</div><div class="sub">Sifatli pardalar va to'qimachilik mahsulotlari</div></div>
+    <div class="chk-title">HISOB-KITOB CHEKI — BUYURTMA #${o.id}</div>
+    <pre style="margin:0;padding:12px 16px;font-size:11.5px;white-space:pre-wrap;font-family:inherit;color:#151b2b">${esc(o.text||'')}</pre>
+    <div class="chk-foot"><div class="th">Xaridingiz uchun tashakkur!</div><div>Rayyon Pardalar Do'koni · Tel: +998 90 940 11 41</div></div>
+  </div>`);
+}
+
+/* Hisobot: bosh adminda TIKUVCHILAR bo'limi — balans va pul berish */
+async function loadReports(){
+  const box=document.getElementById('prof-reports'); if(!box) return;
+  if(!API){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="hint" style="margin-top:14px;text-align:center">Hisobot yuklanmoqda…</div>';
+  try{
+    const d=await api('/api/reports');
+    if(d.role==='mijoz'){
+      const st=Object.entries(d.my.by_status).filter(([k,v])=>v>0)
+        .map(([k,v])=>`<div class="repline"><span>${STGL[k]||k}</span><b>${v}</b></div>`).join('');
+      box.innerHTML=`
+        <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">📋 Mening buyurtmalarim (${d.my.total})</div>
+          ${st||'<div class="hint">Hali buyurtma yo\'q</div>'}</div>
+        <div class="card" style="text-align:left"><div class="nhead">📈 Faoliyatim</div>
+          <div class="repline"><span>💬 Buyurtma izohlarim</span><b>${d.my.comments}</b></div>
+          <div class="repline"><span>🛒 Mahsulot izohlarim</span><b>${d.my.product_comments}</b></div></div>`;
+      return;
+    }
+    if(d.role==='tikuvchi'){
+      const s=d.salary;
+      box.innerHTML=`
+        <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">💰 Oylik hisobotim</div>
+          <div class="repline"><span>🧵 Biriktirilgan ishlar</span><b>${s.ishlar} (faol: ${s.faol}, tayyor: ${s.tayyor})</b></div>
+          <div class="repline"><span>Ishlar bo'yicha yozilgan</span><b>${fmtSom(s.tolanadigan)} so'm</b></div>
+          <div class="repline"><span>📌 Topshiriq haqi</span><b>${fmtSom(s.task_haq)} so'm</b></div>
+          <div class="repline" style="font-size:15px"><span><b>JAMI TO'LANADIGAN</b></span><b>${fmtSom(s.umumiy_tolanadigan)} so'm</b></div>
+        </div>`;
+      return;
+    }
+    if(d.role==='admin'){
+      const st=Object.entries(d.orders.by_status).filter(([k,v])=>v>0)
+        .map(([k,v])=>`<div class="repline"><span>${STGL[k]||k}</span><b>${v}</b></div>`).join('');
+      const wk=(d.workers||[]).map(w=>`<div class="repline"><span>${esc(w.name)}</span><b>✅${w.bajarildi} 🕒${w.ochiq} ⚠️${w.kechikdi}</b></div>`).join('');
+      box.innerHTML=`
+        <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">📋 Menga biriktirilgan buyurtmalar (${d.orders.total})</div>
+          ${st||'<div class="hint">Hali biriktirilmagan</div>'}</div>
+        <div class="card" style="text-align:left"><div class="nhead">📌 Buyurtmalarimdagi topshiriqlar</div>
+          ${wk||'<div class="hint">Topshiriq yo\'q</div>'}</div>`;
+      return;
+    }
+    /* bosh_admin */
+    const st=Object.entries(d.orders.by_status).filter(([k,v])=>v>0)
+      .map(([k,v])=>`<div class="repline"><span>${STGL[k]||k}</span><b>${v}</b></div>`).join('');
+    const tk=(d.tikuvchilar||[]).map(t=>`
+      <div class="repline" style="cursor:pointer" data-tik="${t.id}">
+        <span>🧵 ${esc(t.name)} — ${t.jami} ish</span>
+        <b>balans: ${fmtSom(t.balans)} so'm ›</b></div>`).join('')
+      || '<div class="hint">Tikuvchi biriktirilmagan</div>';
+    const wk=d.workers.map(w=>`<div class="repline"><span>${esc(w.name)} <span class="fw">${esc(w.role)}</span></span><b>✅${w.bajarildi} 🕒${w.ochiq} ⚠️${w.kechikdi}</b></div>`).join('')
+      || '<div class="hint">Task berilmagan</div>';
+    const roles=Object.entries(d.members.by_role||{}).map(([r,n])=>`<div class="repline"><span>${r}</span><b>${n}</b></div>`).join('');
+    const mb=d.members.latest.map(m=>`<div class="repline"><span>${esc(m.name)} <span class="fw">${esc(m.role)}</span></span><b>${m.at}</b></div>`).join('');
+    box.innerHTML=`
+      <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">📋 Buyurtmalar (jami ${d.orders.total})</div>${st||'<div class="hint">Yo\'q</div>'}</div>
+      <div class="card" style="text-align:left"><div class="nhead">🧵 Tikuvchilar (bosib oching)</div><div id="tikList">${tk}</div><div id="tikDetail"></div></div>
+      <div class="card" style="text-align:left"><div class="nhead">👷 Ishchilar (tasklar)</div>${wk}</div>
+      <div class="card" style="text-align:left"><div class="nhead">👥 A'zolar (jami ${d.members.total})</div>${roles}${mb}</div>`;
+    box.querySelectorAll('[data-tik]').forEach(row=>
+      row.addEventListener('click', ()=> tikOpen(+row.dataset.tik)));
+  }catch(e){ box.innerHTML='<div class="hint" style="margin-top:14px;text-align:center">Hisobot yuklanmadi</div>'; }
+}
+
+/* Tikuvchi kartasi: buyurtmalari, haqlari, to'lovlar tarixi, balans, pul berish */
+async function tikOpen(tid){
+  const el=document.getElementById('tikDetail'); if(!el) return;
+  el.innerHTML='<div class="hint">Yuklanmoqda…</div>';
+  try{
+    const d=await api('/api/tikuvchi/'+tid);
+    const SL={biriktirildi:'📎',jarayonda:'🔄',tikildi:'🧵',topshirildi:'✅'};
+    const rows=d.seams.map(s=>`
+      <div class="repline"><span>${SL[s.status]||''} Buyurtma №${s.order_id} — ${esc(s.work||'')}</span>
+        <b>${fmtSom(s.fee)}</b></div>`).join('')||'<div class="hint">Ish yo\'q</div>';
+    const pays=d.payments.map(p=>`
+      <div class="repline"><span>💵 ${p.at}${p.note?' · '+esc(p.note):''}</span>
+        <b>− ${fmtSom(p.amount)}</b></div>`).join('');
+    el.innerHTML=`
+      <div style="border-top:2px solid var(--brand);margin-top:10px;padding-top:10px">
+        <div class="nhead">🧵 ${esc(d.name)}</div>
+        ${rows}
+        ${pays?`<div class="nhead" style="margin-top:8px">To'lovlar tarixi</div>${pays}`:''}
+        <div class="repline"><span>Yozilgan ish haqi</span><b>${fmtSom(d.yozilgan)} so'm</b></div>
+        <div class="repline"><span>To'langan</span><b>− ${fmtSom(d.tolangan)} so'm</b></div>
+        <div class="repline" style="font-size:15px"><span><b>BALANS</b></span><b>${fmtSom(d.balans)} so'm</b></div>
+        <div class="cmtbox" style="margin-top:10px">
+          <input id="payA" type="number" placeholder="summa" style="flex:1">
+          <input id="payN" placeholder="izoh" style="flex:1">
+          <button class="btn btn-primary" id="payBtn" style="flex:0 0 auto;padding:10px 14px">💵 Pul berish</button>
+        </div>
+      </div>`;
+    document.getElementById('payBtn').addEventListener('click', async ()=>{
+      const a=parseFloat(document.getElementById('payA').value)||0;
+      if(a<=0){ toast('Summani kiriting'); return; }
+      try{
+        const r=await api('/api/tikuvchi/'+tid+'/pay',{method:'POST',body:JSON.stringify({
+          amount:a, note:document.getElementById('payN').value})});
+        toast('💵 To\'landi ✓ Yangi balans: '+fmtSom(r.balans));
+        loadReports();
+      }catch(e){ toast('Xatolik'); }
+    });
+  }catch(e){ el.innerHTML='<div class="hint">Yuklanmadi</div>'; }
+}
 </script>
 </body>
 </html>
