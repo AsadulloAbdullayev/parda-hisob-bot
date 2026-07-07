@@ -2140,6 +2140,191 @@ function owMahsulot(){
     });
   });
 }
+
+/* ================================================================
+   ROLLAR: mahsulot izohlari, rolga mos hisobot, javob berish, avto-to'ldirish
+   ================================================================ */
+
+/* Mahsulotlar: izohlar bilan; qo'shish faqat BOSH ADMINga */
+async function productsLoad(){
+  const off=document.getElementById('prd-offline'),
+        add=document.getElementById('prd-add'),
+        list=document.getElementById('prd-list');
+  if(!API){ off.style.display='block'; add.innerHTML=''; list.innerHTML=''; return; }
+  off.style.display='none';
+  list.innerHTML='<div class="ph-card"><p>Yuklanmoqda…</p></div>';
+  try{
+    const d=await api('/api/products');
+    if(d.bosh){
+      prdFoto=null;
+      add.innerHTML=`<div class="card">
+        <div class="nhead">➕ Mahsulot qo'shish (bosh admin)</div>
+        <div class="row2 field">
+          <div><label>Nomi</label><input id="pN" placeholder="3003"></div>
+          <div><label>Kategoriya</label><input id="pC" placeholder="tul / korsaj / zashitniy…"></div>
+        </div>
+        <div class="row2 field">
+          <div><label>Narx (so'm)</label><input id="pP" type="number" placeholder="85000"></div>
+          <div><label>Miqdor</label><input id="pQ" type="number" placeholder="120"></div>
+        </div>
+        <div class="cmtbox">
+          <label class="fotobtn" style="flex:1"><span id="pFtext">📷 Rasm (ixtiyoriy)</span><input type="file" accept="image/*" hidden id="pF"></label>
+          <button class="btn btn-primary" id="pAdd" style="flex:0 0 auto;padding:10px 18px">Qo'shish</button>
+        </div></div>`;
+      document.getElementById('pF').addEventListener('change', e=>{
+        const f=e.target.files&&e.target.files[0]; if(!f) return;
+        resizeImg(f, u=>{ prdFoto=u; document.getElementById('pFtext').textContent='✓ Rasm tanlandi'; });
+      });
+      document.getElementById('pAdd').addEventListener('click', async ()=>{
+        const n=document.getElementById('pN').value.trim();
+        if(!n){ toast('Nomini kiriting'); return; }
+        try{
+          await api('/api/products',{method:'POST',body:JSON.stringify({
+            name:n, category:document.getElementById('pC').value.trim()||'boshqa',
+            price:parseFloat(document.getElementById('pP').value)||0,
+            qty:parseFloat(document.getElementById('pQ').value)||0, photo:prdFoto})});
+          toast('Mahsulot qo\'shildi ✓'); productsLoad();
+        }catch(e){ toast('Xatolik'); }
+      });
+    } else add.innerHTML='';
+    if(!d.products.length){
+      list.innerHTML='<div class="ph-card"><div class="pic">🛒</div><h2>Katalog bo\'sh</h2><p>Mahsulotlar hali qo\'shilmagan.</p></div>';
+      return;
+    }
+    const byCat={};
+    d.products.forEach(p=>{ (byCat[p.category]=byCat[p.category]||[]).push(p); });
+    list.innerHTML=Object.entries(byCat).map(([cat,items])=>`
+      <div class="nhead" style="margin:14px 4px 8px">🗂 ${esc(cat).toUpperCase()}</div>
+      ${items.map(p=>`<div class="ocard" style="cursor:default">
+        <div style="display:flex;gap:12px;align-items:center">
+          ${p.img?`<img src="${p.img.startsWith('/')?API+p.img:p.img}" style="width:62px;height:62px;object-fit:cover;border-radius:10px;flex:0 0 auto">`
+                 :`<div style="width:62px;height:62px;border-radius:10px;background:var(--brand-soft);display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 auto">🧵</div>`}
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:14px">${esc(p.name)}</div>
+            <div style="font-size:13px;color:var(--brand);font-weight:700">${fmtSom(p.price)} so'm</div>
+            ${p.qty?`<div class="orow3">${p.qty} mavjud</div>`:''}
+          </div>
+        </div>
+        <div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:7px">
+          ${(p.comments||[]).map(x=>`<div class="cmt ${x.mine?'mine':''}" style="padding:6px 9px;margin-bottom:5px"><b>${esc(x.name)}</b><span>${(x.at||'').replace('T',' ').slice(5,16)}</span><div>${esc(x.text)}</div></div>`).join('')}
+          <div class="cmtbox" style="margin-top:5px">
+            <input data-pcin="${p.id}" placeholder="Izoh yozing (admin va sizga ko'rinadi)…" style="font-size:13px;padding:8px 10px">
+            <button class="btn btn-primary" data-pc="${p.id}" style="flex:0 0 auto;padding:8px 13px">➤</button>
+          </div>
+        </div>
+      </div>`).join('')}`).join('');
+    list.querySelectorAll('[data-pc]').forEach(btn=> btn.addEventListener('click', async ()=>{
+      const pid=btn.dataset.pc;
+      const inp=list.querySelector(`[data-pcin="${pid}"]`);
+      const t=inp.value.trim(); if(!t) return;
+      try{ await api('/api/products/'+pid+'/comment',{method:'POST',body:JSON.stringify({text:t})});
+        toast('Izoh qo\'shildi ✓'); productsLoad(); }
+      catch(e){ toast('Xatolik'); }
+    }));
+  }catch(e){ list.innerHTML='<div class="ph-card"><p>Yuklashda xatolik</p></div>'; }
+}
+
+/* Hisobot — rolga qarab */
+async function loadReports(){
+  const box=document.getElementById('prof-reports'); if(!box) return;
+  if(!API){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="hint" style="margin-top:14px;text-align:center">Hisobot yuklanmoqda…</div>';
+  try{
+    const d=await api('/api/reports');
+    if(d.role==='mijoz'){
+      const st=Object.entries(d.my.by_status).filter(([k,v])=>v>0)
+        .map(([k,v])=>`<div class="repline"><span>${STGL[k]||k}</span><b>${v}</b></div>`).join('');
+      box.innerHTML=`
+        <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">📋 Mening buyurtmalarim (${d.my.total})</div>
+          ${st||'<div class="hint">Hali buyurtma yo\'q</div>'}</div>
+        <div class="card" style="text-align:left"><div class="nhead">📈 Faoliyatim</div>
+          <div class="repline"><span>💬 Buyurtma izohlarim</span><b>${d.my.comments}</b></div>
+          <div class="repline"><span>🛒 Mahsulot izohlarim</span><b>${d.my.product_comments}</b></div></div>`;
+      return;
+    }
+    if(d.role==='tikuvchi'){
+      const s=d.salary;
+      box.innerHTML=`
+        <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">💰 Oylik hisobotim (${fmtSom(d.tikuv_narx)} so'm/m)</div>
+          <div class="repline"><span>🧵 Biriktirilgan ishlar</span><b>${s.ishlar} (faol: ${s.faol}, tayyor: ${s.tayyor})</b></div>
+          <div class="repline"><span>Ishlar bo'yicha to'lanadigan</span><b>${fmtSom(s.tolanadigan)} so'm</b></div>
+          <div class="repline"><span>📌 Topshiriqlar (bajarilgan)</span><b>${s.task_bajarildi} ta · ${s.task_metr} m</b></div>
+          <div class="repline"><span>Topshiriq haqi</span><b>${fmtSom(s.task_haq)} so'm</b></div>
+          <div class="repline" style="font-size:15px"><span><b>JAMI TO'LANADIGAN</b></span><b>${fmtSom(s.umumiy_tolanadigan)} so'm</b></div>
+        </div>`;
+      return;
+    }
+    if(d.role==='admin'){
+      const st=Object.entries(d.orders.by_status).filter(([k,v])=>v>0)
+        .map(([k,v])=>`<div class="repline"><span>${STGL[k]||k}</span><b>${v}</b></div>`).join('');
+      const wk=(d.workers||[]).map(w=>`<div class="repline"><span>${esc(w.name)}</span><b>✅${w.bajarildi} 🕒${w.ochiq} ⚠️${w.kechikdi}</b></div>`).join('');
+      box.innerHTML=`
+        <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">📋 Menga biriktirilgan buyurtmalar (${d.orders.total})</div>
+          ${st||'<div class="hint">Hali biriktirilmagan</div>'}</div>
+        <div class="card" style="text-align:left"><div class="nhead">📌 Buyurtmalarimdagi topshiriqlar</div>
+          ${wk||'<div class="hint">Topshiriq yo\'q</div>'}</div>`;
+      return;
+    }
+    /* bosh_admin — global */
+    const st=Object.entries(d.orders.by_status).filter(([k,v])=>v>0)
+      .map(([k,v])=>`<div class="repline"><span>${STGL[k]||k}</span><b>${v}</b></div>`).join('');
+    const wk=d.workers.map(w=>`<div class="repline"><span>${esc(w.name)} <span class="fw">${esc(w.role)}</span></span><b>✅${w.bajarildi} 🕒${w.ochiq} ⚠️${w.kechikdi}${w.haq?' · 💰'+fmtSom(w.haq):''}</b></div>`).join('')
+      || '<div class="hint">Task berilmagan</div>';
+    const tk=(d.tikuvchilar||[]).map(t=>`<div class="repline"><span>🧵 ${esc(t.name)} — ${t.jami} ish (faol ${t.faol})</span><b>to'lanadigan: ${fmtSom(t.tolanadigan)} / jami: ${fmtSom(t.jami_haq)}</b></div>`).join('')
+      || '<div class="hint">Tikuvchi biriktirilmagan</div>';
+    const roles=Object.entries(d.members.by_role||{}).map(([r,n])=>`<div class="repline"><span>${r}</span><b>${n}</b></div>`).join('');
+    const mb=d.members.latest.map(m=>`<div class="repline"><span>${esc(m.name)} <span class="fw">${esc(m.role)}</span></span><b>${m.at}</b></div>`).join('');
+    box.innerHTML=`
+      <div class="card" style="text-align:left;margin-top:16px"><div class="nhead">📋 Buyurtmalar (jami ${d.orders.total})</div>${st||'<div class="hint">Yo\'q</div>'}</div>
+      <div class="card" style="text-align:left"><div class="nhead">🧵 Tikuvchilar yuklamasi va haqi</div>${tk}</div>
+      <div class="card" style="text-align:left"><div class="nhead">👷 Ishchilar (tasklar)</div>${wk}</div>
+      <div class="card" style="text-align:left"><div class="nhead">👥 A'zolar (jami ${d.members.total})</div>${roles}${mb}</div>`;
+  }catch(e){ box.innerHTML='<div class="hint" style="margin-top:14px;text-align:center">Hisobot yuklanmadi</div>'; }
+}
+
+/* Faoliyat tasmasiga «↩ Javob berish» tugmalari (izoh va topshiriqlarga) */
+const _owUmumiyOrig = owUmumiy;
+owUmumiy = function(){
+  _owUmumiyOrig();
+  const B=document.getElementById('owBody'); if(!B) return;
+  const cmt=document.getElementById('owCmt'); if(!cmt) return;
+  const addRep=(container,name)=>{
+    const btn=document.createElement('button');
+    btn.className='ow-btn'; btn.dataset.rep='1';
+    btn.style.cssText='margin-top:5px;padding:4px 10px;font-size:11px';
+    btn.textContent='↩ Javob berish';
+    btn.addEventListener('click', ()=>{
+      cmt.value='@'+name+': '; cmt.focus();
+      cmt.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+    container.appendChild(btn);
+  };
+  B.querySelectorAll('.feed-i').forEach(it=>{
+    if(it.querySelector('[data-rep]')) return;
+    if((it.querySelector('.fic')?.textContent||'')!=='💬') return;
+    const b=it.querySelector('b'); if(!b) return;
+    addRep(it.children[1], b.textContent);
+  });
+  B.querySelectorAll('.seamrow:not([data-sid])').forEach(it=>{
+    if(it.querySelector('[data-rep]')) return;
+    const b=it.querySelector('b'); if(!b) return;
+    addRep(it, b.textContent);
+  });
+};
+
+/* Mijoz uchun majburiy maydonlarni avto-to'ldirish (ism tahrirlanadi) */
+setTimeout(async ()=>{
+  try{
+    if(!API) return;
+    const m=await api('/api/me');
+    window.ME=m;
+    if(m.role==='mijoz'){
+      const n=document.querySelector('[data-m="nom"]'), t=document.querySelector('[data-m="tel"]');
+      if(n && !n.value && m.name){ n.value=m.name; n.dispatchEvent(new Event('input',{bubbles:true})); }
+      if(t && !t.value && m.phone){ t.value=m.phone; t.dispatchEvent(new Event('input',{bubbles:true})); }
+    }
+  }catch(e){}
+}, 900);
 </script>
 </body>
 </html>
