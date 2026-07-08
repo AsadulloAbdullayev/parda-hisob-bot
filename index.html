@@ -330,7 +330,7 @@
 
 <script>
 /* ===== Hisoblash mantig'i ===== */
-const COEF_DEFAULT = { pataloshniy: 3, turba: 2, rils: 2.5, amerikanka: 2.5 };
+const COEF_DEFAULT = { pataloshniy: 3, turba: 2, rils: 2.5 };
 const PARDA_TARTIBI = ["zashitniy","tul","parter"];
 const TIKISH_NARX = 40000;
 function r2(n){ return Math.round(n*100)/100; }
@@ -349,11 +349,6 @@ function accLines(tur, x, mato, kalsoTuri){
   const kind = baseKind(tur);
   const t=x.karnizTuri, eni=x.eni;
   const L=[];
-  if(t==='amerikanka'){
-    /* korsaj = material metri; kalso ham, radnoy ham YO'Q */
-    L.push({f:'karsaj', name:'Karsaj', unit:'m', q: mato});
-    return L;
-  }
   if(t==='pataloshniy' || t==='rils'){
     L.push({f:'karsaj', name:'Karsaj', unit:'m', q: kind==='parter'?1.8:eni});
     return L;
@@ -382,11 +377,14 @@ const PARDA = [
   {key:'parter',    label:'Parter'},
   {key:'parter2',   label:'Parter 2'},
 ];
-const TURI = {pataloshniy:'Pataloshniy', turba:'Turba', rils:'Rils', amerikanka:'Amerikanka'};
+const TURI = {pataloshniy:'Pataloshniy', turba:'Turba', rils:'Rils'};
 /* Zashita nomiga qarab avtomatik narx */
-const ZASH_NARX = {'2.8':25000, '3.2 qalin':30000, '3.2 yupqa':25000, '3.5':35000};
-/* Korsaj turlari — ikkalasi ham 5 000 */
+const ZASH_NARX = {'zashita 2.8':25000, 'zashita 3.2 qalin':30000,
+                   'zashita 3.2 yupqa':25000, 'zashita 3.5':35000};
+/* Korsaj turlari: 705/diba — 5 000; amerikanka — karset kabi (metri=mato) */
 const KARSAJ_NARX = {'705':5000, 'diba':5000};
+/* Aksessuarlar uchun oldindan narxlar */
+const PRESET_NARX = {karsaj:5000, karset:10000, kalso:1500, radnoy:1500};
 const KTOG = {kalso:'Kalso', radnoy:'Radnoy kalso'};
 
 let rooms = [];
@@ -408,13 +406,10 @@ let CATALOG = {};   /* {tul:['3003',...], zashitniy:[...], korsaj:[...], boshqa:
 function catNames(cat){ return CATALOG[cat] || []; }
 /* Zashita nomiga qarab avtomatik narx (preset yoki katalogdan) */
 function matoNarx(key, nom){
-  const k=baseKind(key), n=(nom||'').trim();
+  const n=(nom||'').trim().toLowerCase();
   if(!n) return null;
-  if(k==='zashitniy'){
-    for(const [nm,p] of Object.entries(ZASH_NARX)){ if(n.toLowerCase().includes(nm.toLowerCase().split(' ')[0]) && n.toLowerCase().includes(nm.toLowerCase().split(' ')[1]||'')) return p; }
-    if(ZASH_NARX[n]!=null) return ZASH_NARX[n];
-  }
-  const pr=(window.PRD_MAP||{})[n.toLowerCase()];
+  for(const [nm,p] of Object.entries(ZASH_NARX)){ if(n===nm.toLowerCase()) return p; }
+  const pr=(window.PRD_MAP||{})[n];
   return pr!=null ? pr : null;
 }
 function karsajNarx(nom){
@@ -629,16 +624,30 @@ function buildNatija(el,r){
   let html = `<div class="hint">Har mahsulot uchun nom, miqdor va narxni tahrirlash mumkin</div>`;
   active.forEach(p=>{
     const key=p.key;
-    const allowT = r.qator===1 ? ['turba','rils','amerikanka'] : ['pataloshniy','turba','rils','amerikanka'];
+    const allowT = r.qator===1 ? ['turba','rils'] : ['pataloshniy','turba','rils'];
     if(!allowT.includes(r.cfg[key].kturi)){ r.cfg[key].kturi=allowT[0];
       if(key==='tul'||key==='tul2') r.cfg[key].coef=COEF_DEFAULT[allowT[0]]; }
+    /* zashita: oldindan tanlangan nom */
+    if(key==='zashitniy' && !r.cfg[key].name) r.cfg[key].name='zashita 3.2 qalin';
     const t = tavsiya(r, key);
     const prev = oldQ[key] || {};
     const prevAcc = prev.acc || [];
     r.q[key] = {
       mato: {q:t.mato, p: prev.mato?prev.mato.p:getDef(key,'mato')},
-      acc:  t.acc.map(a=>{ const pa=prevAcc.find(x=>x.f===a.f); return {...a, p: pa?pa.p:getDef(key,a.f), uname: pa?pa.uname:''}; })
+      acc:  t.acc.map(a=>{
+        const pa=prevAcc.find(x=>x.f===a.f);
+        const uname = pa ? pa.uname : (a.f==='karsaj' ? '705' : '');
+        let q=a.q;
+        /* amerikanka karsaj — karset kabi: metri = mato */
+        if(a.f==='karsaj' && (uname||'').toLowerCase().includes('amerikanka')) q=t.mato;
+        return {...a, q, p: pa?pa.p:(getDef(key,a.f)||PRESET_NARX[a.f]||0), uname};
+      })
     };
+    /* zashita: oldindan narx */
+    if(key==='zashitniy' && !r.q[key].mato.p){
+      const zp=matoNarx(key, r.cfg[key].name);
+      if(zp!=null) r.q[key].mato.p=zp;
+    }
     const coefSel = (key==='tul'||key==='tul2') ? `
       <select class="ksel" data-coefp>
         ${[2,2.5,3].map(c=>`<option value="${c}" ${c===r.cfg[key].coef?'selected':''}>×${c}</option>`).join('')}
@@ -698,6 +707,11 @@ function buildNatija(el,r){
         if(p!=null){
           a.p=p; setDef(key,'karsaj',p);
           const pi=pb.querySelector('[data-accp="karsaj"]'); if(pi) pi.value=p;
+        }
+        /* amerikanka — karset kabi: metri = mato uzunligi */
+        const qi=pb.querySelector('[data-acc="karsaj"]');
+        if((inp.value||'').toLowerCase().includes('amerikanka')){
+          a.q=r.q[key].mato.q; if(qi) qi.value=a.q;
         }
       }
       recompute();
@@ -1445,12 +1459,19 @@ async function productsLoad(){
         let cat=document.getElementById('pC').value;
         if(cat==='__yangi') cat=document.getElementById('pC2').value.trim();
         if(!cat){ toast('Kategoriyani tanlang'); return; }
+        const payload={name:n, category:cat,
+          price:parseFloat(document.getElementById('pP').value)||0,
+          qty:parseFloat(document.getElementById('pQ').value)||0, photo:prdFoto};
         try{
-          await api('/api/products',{method:'POST',body:JSON.stringify({
-            name:n, category:cat,
-            price:parseFloat(document.getElementById('pP').value)||0,
-            qty:parseFloat(document.getElementById('pQ').value)||0, photo:prdFoto})});
-          toast('Mahsulot qo\'shildi ✓'); productsLoad();
+          if(window.PRD_EDIT){
+            await api('/api/products/'+window.PRD_EDIT+'/update',{method:'POST',body:JSON.stringify(payload)});
+            toast('Mahsulot yangilandi ✓');
+          } else {
+            await api('/api/products',{method:'POST',body:JSON.stringify(payload)});
+            toast('Mahsulot qo\'shildi ✓');
+          }
+          window.PRD_EDIT=null;
+          productsLoad();
         }catch(e){ toast('Xatolik'); }
       });
     } else add.innerHTML='';
@@ -1963,12 +1984,26 @@ function ordRender(){
       <span class="ow-num">Buyurtma #${o.id}</span>
       <select class="ow-org"><option>Rayyon Pardalar</option></select>
       <span class="ow-sp"></span>
+      ${d.bosh?`<button class="ow-btn" id="owDel" style="color:#c62828">🗑</button>`:''}
       <button class="ow-btn" id="owDoc">📄 Dokumentlar</button>
     </div>
     <div class="ow-pipe">${pipe}</div>
     <div class="ow-tabs">${tabs}</div>
     <div class="ow-body" id="owBody"></div>`;
   document.getElementById('owBack').addEventListener('click', ordClose);
+  const odel=document.getElementById('owDel');
+  if(odel) odel.addEventListener('click', async ()=>{
+    if(odel.dataset.armed!=='1'){
+      odel.dataset.armed='1'; odel.textContent='🗑 Tasdiqlaysizmi?';
+      setTimeout(()=>{ odel.dataset.armed='0'; odel.textContent='🗑'; }, 3000);
+      return;
+    }
+    try{
+      await api('/api/orders/'+o.id+'/delete',{method:'POST',body:'{}'});
+      toast('🗑 Buyurtma №'+o.id+' o\'chirildi');
+      ordClose();
+    }catch(e){ toast('Xatolik'); }
+  });
   W.querySelectorAll('[data-owtab]').forEach(b=> b.addEventListener('click', ()=>{ owTab=b.dataset.owtab; ordRender(); }));
   if(cm) W.querySelectorAll('.ow-st').forEach(ch=> ch.addEventListener('click', async ()=>{
     try{ await api('/api/orders/'+o.id+'/status',{method:'POST',body:JSON.stringify({status:ch.dataset.st})}); ordOpen(o.id,owTab); }
@@ -2369,12 +2404,19 @@ async function productsLoad(){
         let cat=document.getElementById('pC').value;
         if(cat==='__yangi') cat=document.getElementById('pC2').value.trim();
         if(!cat){ toast('Kategoriyani tanlang'); return; }
+        const payload={name:n, category:cat,
+          price:parseFloat(document.getElementById('pP').value)||0,
+          qty:parseFloat(document.getElementById('pQ').value)||0, photo:prdFoto};
         try{
-          await api('/api/products',{method:'POST',body:JSON.stringify({
-            name:n, category:cat,
-            price:parseFloat(document.getElementById('pP').value)||0,
-            qty:parseFloat(document.getElementById('pQ').value)||0, photo:prdFoto})});
-          toast('Mahsulot qo\'shildi ✓'); productsLoad();
+          if(window.PRD_EDIT){
+            await api('/api/products/'+window.PRD_EDIT+'/update',{method:'POST',body:JSON.stringify(payload)});
+            toast('Mahsulot yangilandi ✓');
+          } else {
+            await api('/api/products',{method:'POST',body:JSON.stringify(payload)});
+            toast('Mahsulot qo\'shildi ✓');
+          }
+          window.PRD_EDIT=null;
+          productsLoad();
         }catch(e){ toast('Xatolik'); }
       });
     } else add.innerHTML='';
@@ -2382,9 +2424,19 @@ async function productsLoad(){
       list.innerHTML='<div class="ph-card"><div class="pic">🛒</div><h2>Katalog bo\'sh</h2><p>Mahsulotlar hali qo\'shilmagan.</p></div>';
       return;
     }
+    /* kategoriya filtri (tepada, tabbar kabi) */
+    const cats=[...new Set(d.products.map(p=>p.category||'boshqa'))];
+    if(!window.PRD_FILTER || (window.PRD_FILTER!=='__all' && !cats.includes(window.PRD_FILTER)))
+      window.PRD_FILTER='__all';
+    const fchips=`<div class="parda-pick" style="margin:4px 0 12px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">
+      <div class="chip ${window.PRD_FILTER==='__all'?'on':''}" data-pf="__all" style="flex:0 0 auto">🗂 Hammasi</div>
+      ${cats.map(c=>`<div class="chip ${window.PRD_FILTER===c?'on':''}" data-pf="${esc(c)}" style="flex:0 0 auto">${esc(c)}</div>`).join('')}
+    </div>`;
+    const show = window.PRD_FILTER==='__all' ? d.products
+               : d.products.filter(p=>(p.category||'boshqa')===window.PRD_FILTER);
     const byCat={};
-    d.products.forEach(p=>{ (byCat[p.category]=byCat[p.category]||[]).push(p); });
-    list.innerHTML=Object.entries(byCat).map(([cat,items])=>`
+    show.forEach(p=>{ (byCat[p.category||'boshqa']=byCat[p.category||'boshqa']||[]).push(p); });
+    list.innerHTML=fchips+Object.entries(byCat).map(([cat,items])=>`
       <div class="nhead" style="margin:14px 4px 8px">🗂 ${esc(cat).toUpperCase()}</div>
       ${items.map(p=>`<div class="ocard" style="cursor:default">
         <div style="display:flex;gap:12px;align-items:center">
@@ -2395,6 +2447,10 @@ async function productsLoad(){
             <div style="font-size:13px;color:var(--brand);font-weight:700">${fmtSom(p.price)} so'm</div>
             ${p.qty?`<div class="orow3">${p.qty} mavjud</div>`:''}
           </div>
+          ${d.bosh?`<div style="display:flex;flex-direction:column;gap:6px;flex:0 0 auto">
+            <button class="cpy" data-pedit="${p.id}" style="padding:2px;font-size:15px">✏️</button>
+            <button class="exdel" data-pdel="${p.id}">✕</button>
+          </div>`:''}
         </div>
         <div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:7px">
           ${(p.comments||[]).map(x=>`<div class="cmt ${x.mine?'mine':''}" style="padding:6px 9px;margin-bottom:5px"><b>${esc(x.name)}</b><span>${(x.at||'').replace('T',' ').slice(5,16)}</span><div>${esc(x.text)}</div></div>`).join('')}
@@ -2411,6 +2467,36 @@ async function productsLoad(){
       try{ await api('/api/products/'+pid+'/comment',{method:'POST',body:JSON.stringify({text:t})});
         toast('Izoh qo\'shildi ✓'); productsLoad(); }
       catch(e){ toast('Xatolik'); }
+    }));
+    /* kategoriya filtri */
+    list.querySelectorAll('[data-pf]').forEach(ch=> ch.addEventListener('click', ()=>{
+      window.PRD_FILTER=ch.dataset.pf; productsLoad();
+    }));
+    /* o'chirish (2 bosishli tasdiq) */
+    list.querySelectorAll('[data-pdel]').forEach(b=> b.addEventListener('click', async ()=>{
+      if(b.dataset.armed!=='1'){
+        b.dataset.armed='1'; b.textContent='✕?';
+        setTimeout(()=>{ b.dataset.armed='0'; b.textContent='✕'; }, 2500);
+        return;
+      }
+      try{
+        await api('/api/products/'+b.dataset.pdel+'/update',{method:'POST',body:JSON.stringify({delete:true})});
+        toast('Mahsulot o\'chirildi'); productsLoad();
+      }catch(e){ toast('Xatolik'); }
+    }));
+    /* tahrirlash — forma to'ldiriladi */
+    list.querySelectorAll('[data-pedit]').forEach(b=> b.addEventListener('click', ()=>{
+      const p=d.products.find(x=>x.id==b.dataset.pedit); if(!p) return;
+      window.PRD_EDIT=p.id;
+      document.getElementById('pN').value=p.name;
+      const sel=document.getElementById('pC');
+      if([...sel.options].some(o=>o.value===p.category)){ sel.value=p.category; document.getElementById('pC2').style.display='none'; }
+      else { sel.value='__yangi'; const c2=document.getElementById('pC2'); c2.style.display='block'; c2.value=p.category; }
+      document.getElementById('pP').value=p.price;
+      document.getElementById('pQ').value=p.qty;
+      document.getElementById('pAdd').textContent='💾 Saqlash (№'+p.id+')';
+      window.scrollTo({top:0,behavior:'smooth'});
+      toast('Tahrirlash rejimi — formani o\'zgartirib «Saqlash»ni bosing');
     }));
   }catch(e){ list.innerHTML='<div class="ph-card"><p>Yuklashda xatolik</p></div>'; }
 }
@@ -2526,7 +2612,7 @@ function presetDatalists(){
   fillDatalist('dl-tul', tul);
   fillDatalist('dl-parter', par);
   fillDatalist('dl-zashitniy', [...Object.keys(ZASH_NARX), ...catNames('zashitniy'), ...catNames('zashita')]);
-  fillDatalist('dl-karsaj', [...Object.keys(KARSAJ_NARX), ...catNames('korsaj'), ...catNames('karsaj')]);
+  fillDatalist('dl-karsaj', [...Object.keys(KARSAJ_NARX), 'amerikanka', ...catNames('korsaj'), ...catNames('karsaj')]);
 }
 
 setTimeout(async ()=>{
