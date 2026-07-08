@@ -67,6 +67,17 @@
   .ptop{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:9px;}
   .pname{font-weight:700;font-size:14px;color:var(--brand);}
   .mnamei{flex:1;min-width:72px;width:auto;padding:6px 8px;font-size:12px;border-radius:9px;background:var(--card);}
+  /* Takliflar paneli (varaq kabi pastda ochiladi) */
+  .sugwrap{position:relative;flex:1;min-width:72px;display:flex;}
+  .sugwrap>input{flex:1;width:100%;}
+  .sugpanel{position:absolute;top:calc(100% + 5px);left:0;min-width:210px;right:auto;background:var(--card);
+    border:1.5px solid var(--brand);border-radius:13px;box-shadow:0 12px 30px rgba(150,110,20,.25);
+    z-index:80;max-height:240px;overflow:auto;}
+  .sugpanel div{padding:10px 13px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;gap:10px;align-items:center;}
+  .sugpanel div:last-child{border-bottom:none;}
+  .sugpanel div:hover{background:var(--brand-soft);}
+  .sugpanel .sp{color:#b47700;font-weight:800;white-space:nowrap;font-size:12px;}
   .ksel{width:auto;padding:6px 7px;font-size:12px;border-radius:9px;background:var(--card);border-color:var(--line);}
   .psum{margin-left:auto;font-weight:800;font-size:14px;white-space:nowrap;}
 
@@ -419,6 +430,59 @@ function karsajNarx(nom){
   const pr=(window.PRD_MAP||{})[n];
   return pr!=null ? pr : null;
 }
+/* ===== Taklif paneli: bosilganda BARCHA variantlar, yozilganda filtr ===== */
+function sugMato(key){
+  const k=baseKind(key); let arr=[];
+  if(k==='zashitniy') arr=Object.keys(ZASH_NARX).map(n=>({n, p:ZASH_NARX[n]}));
+  const cats = k==='zashitniy' ? ['zashitniy','zashita']
+             : (k==='tul' ? ['tul'] : ['parter','portyera']);
+  cats.forEach(c=> catNames(c).forEach(n=>{
+    if(!arr.some(x=>x.n.toLowerCase()===n.toLowerCase()))
+      arr.push({n, p:(window.PRD_MAP||{})[n.toLowerCase()]});
+  }));
+  if(k!=='zashitniy') catNames('boshqa').forEach(n=>{
+    if(!arr.some(x=>x.n.toLowerCase()===n.toLowerCase()))
+      arr.push({n, p:(window.PRD_MAP||{})[n.toLowerCase()]});
+  });
+  return arr;
+}
+function sugKarsaj(){
+  const arr=[{n:'705',p:5000},{n:'diba',p:5000},
+             {n:'amerikanka',p:(window.PRD_MAP||{})['amerikanka']}];
+  ['korsaj','karsaj'].forEach(c=> catNames(c).forEach(n=>{
+    if(!arr.some(x=>x.n.toLowerCase()===n.toLowerCase()))
+      arr.push({n, p:(window.PRD_MAP||{})[n.toLowerCase()]});
+  }));
+  return arr;
+}
+function attachSug(inp, optsFn){
+  if(!inp || inp.dataset.sug) return;
+  inp.dataset.sug='1';
+  inp.removeAttribute('list');
+  inp.setAttribute('autocomplete','off');
+  const w=document.createElement('span'); w.className='sugwrap';
+  inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+  const pn=document.createElement('div'); pn.className='sugpanel'; pn.style.display='none';
+  w.appendChild(pn);
+  const render=(q)=>{
+    const all=optsFn()||[];
+    const list=q ? all.filter(o=>o.n.toLowerCase().includes(q.toLowerCase())) : all;
+    if(!list.length){ pn.style.display='none'; return; }
+    pn.innerHTML=list.slice(0,30).map(o=>
+      `<div data-v="${esc(o.n)}"><span>${esc(o.n)}</span>${o.p!=null?`<span class="sp">${fmtSom(o.p)}</span>`:''}</div>`).join('');
+    pn.style.display='block';
+    pn.querySelectorAll('[data-v]').forEach(it=> it.addEventListener('mousedown', ev=>{
+      ev.preventDefault();
+      inp.value=it.dataset.v;
+      inp.dispatchEvent(new Event('input',{bubbles:true}));
+      pn.style.display='none';
+    }));
+  };
+  /* bosilganda: eski yozuv belgilanadi (yozsa o'chib ketadi) + hamma variantlar */
+  inp.addEventListener('focus', ()=>{ inp.select(); render(''); });
+  inp.addEventListener('input', ()=>{ render(inp.value.trim()); });
+  inp.addEventListener('blur', ()=>{ setTimeout(()=>pn.style.display='none',150); });
+}
 function pardaCfg(){ return {kturi:'pataloshniy', kalsoTuri:'kalso', name:''}; }
 function newRoom(){
   seq++;
@@ -733,6 +797,9 @@ function buildNatija(el,r){
     if(kt) kt.addEventListener('change', ()=>{ r.cfg[key].kalsoTuri=kt.value; refresh(el,r); });
     const cs=pb.querySelector('[data-coefp]');
     if(cs) cs.addEventListener('change', ()=>{ r.cfg[key].coef=parseFloat(cs.value); refresh(el,r); });
+    /* taklif panellari: mato nomi + karsaj nomi */
+    attachSug(pb.querySelector('[data-mname]'), ()=>sugMato(key));
+    attachSug(pb.querySelector('[data-accname="karsaj"]'), sugKarsaj);
   });
 }
 
@@ -857,7 +924,7 @@ function buildReport(){
   const vr=validRooms();
   vr.forEach((r,i)=>{
     const rl=roomLines(r);
-    s+=`🏠 ${r.nom||'Xona '+(i+1)} (${fmtM(num(r.eni))}×${fmtM(num(r.boyi))} m)\n`;
+    s+=`🏠 ${r.nom||'Xona '+(i+1)}\n   📐 Eni: ${fmtM(num(r.eni))} m · Bo'yi: ${fmtM(num(r.boyi))} m\n`;
     rl.lines.forEach(l=>{
       const u=l.unit==='dona'?' dona':(l.unit==='m'?'m':'');
       s+=`   ${l.name}: ${fmtQ(l.qty,l.unit)}${u}${l.narx!=null?' × '+fmtSom(l.narx):''} = ${fmtSom(l.summa)}\n`;
