@@ -1,7 +1,7 @@
-# Bot va maxfiy fayllar
-bot.py
+# Maxfiy fayllar (GitHub'ga YUKLANMAYDI)
+secrets_local.py
 hisobot.db
-requirements.txt
+hisobot_*.db
 
 # IDE va tool papkalari
 .idea/
